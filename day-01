@@ -1,0 +1,118 @@
+DAY-01: 11-12-2023
+
+GIT: GLOBAL INFORMATION TRACKER
+SCM: SOURCE CODE MANAGEMENT TOOL
+VCS: VERSION CONTROL SYSTEM
+
+ALTERS: SVN, MERCURY
+
+YEAR: 2005
+INVENTED BY: LINUS TORVALDS
+PROGRAMMING: C 
+TYPE: OPEN SOURCE
+GENERATION: 3RD 
+
+BEFORE GIT:
+SCCM -- > RCS -- > CVS -- > SVN -- > GIT 
+
+DVCS: STORE CODE ON MULTIPLE REPOS
+EX: GIT
+CVCS: STORE CODE ON SINGE REPOS
+EX: SVN
+
+STAGES OF GIT:
+Git have total 3 stages.
+
+1. WORKING DIRECTORY:
+Its a folder where we write the code.
+here we can't track the files.
+
+2. STAGING AREA:
+here we can track the files.
+its next version of your file.
+
+
+3. REPOSITORY:
+it's a folder where we can store tracked file.
+
+
+BRANCHES:
+It's an individual line of development for code.
+we create different branches in real-time.
+each developer will work on their own branch.
+At the end we will combine all branches together in GitHub.
+Default branch is Master.
+EX: main, feature, release, hotfix ----
+
+git branch		: to list the branches
+git branch movies	: to create a new branch
+git checkout movies	: to switch from one branch to another.
+git checkout -b recharge: to create and switch from one branch to another.
+git branch -m old new	: to rename a branch
+git branch -D movies	: to delete a branch
+
+GIT RESTORE: to restore the deleted files & used to untrack the tracked files.
+git restore file1 : to get deleted file
+git restore --staged file1 : to untrack the tracked file
+
+
+Note: here every dev works on the local laptop
+at the end we want all dev codes to create an application.
+so here we use GitHub to combine all dev codes together.
+
+git remote add origin https://github.com/revathisiriki78/paytm.git
+git push origin movies
+username:
+password:
+
+GIT MERGE: it is used to merge the file blw two branches.
+git checkout master
+git merge movies
+
+GIT REBASE: it is used to merge the file blw two branches.
+git rebase recharge
+
+MERGE VS REBASE:
+merge for public repos, rebase for private 
+merge stores history, rebase will not store the entire history
+merge will show files, rebase will not show files
+
+PULL REQUEST: MERGING THE BRANCHES IN GITHUB
+
+GIT REVERT: To undo the merging blw two branches.
+
+GIT CLONE: TO copy remote repo to local.
+git clone https://github.com/RAHAMSHAIK007/6pmnewpaytm.git
+
+GIT FORK: To copy repo from one GitHub account to another GitHub account.
+
+NOTE: to do a fork or clone repo must be public.
+
+MERGE CONFLICTS:
+it will rise when we merge 2 different branches with same files.
+How to resolve: Manually 
+
+CHERRY PICK: it will merge  specific files from one branch to another branch based on commits.
+git cherry-pick commit_id
+
+GIT LOGS: used to show the information of files, commits and metadata.
+
+GIT SHOW: To show the files attached to commits.
+git show commit_id
+
+
+GIT STASH: used to hide all the un comitted files.
+
+GIT PULL: used to get the latest code from Git Hub to git.
+Note: if the content in github and git is same it will not work.
+
+git pull origin master
+
+GIT FETCH: used to show the latest code from Git Hub to git.
+git fetch origin master
+git fetch 
+
+.gitignore: used to ignore the files. here files cant be tracked.
+
+===========================================================================================
+
