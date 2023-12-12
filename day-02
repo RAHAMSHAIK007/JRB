@@ -1,0 +1,168 @@
+JENKINS:
+Its a CI/CD Tool.
+
+CI= CONTINOUS INTEGRATION: CONTINOUS BUILD + CONTINOUS TEST (OLD CODE WITH NEW CODE)
+DAY-1: 100 LINES 
+DAY-2: 100 LINES
+TOTAL: 200 LINES (BUILD AND TEST) 
+DAY-3: 100 LINES
+TOTAL: 300 LINES (BUILD AND TEST)
+
+BEFORE CI:
+1. MANUAL WORK
+2. TIME WASTE
+
+AFTER CI:
+1. AUTOMATED 
+2. TIME SAVING
+
+CD: CONTINOUS DELIVERY & CONTINOUS DEPLOYMENT
+
+ENV:
+1. DEV 	= DEVELOPERS
+2. QA	= TESTERS
+3. UAT  = CLIENTS
+
+ABOVE 3 ENVS ARE CALLED AS PRE PROD/NON PROD
+
+4. PROD	= USERS
+
+PROD ENV IS CALLED AS LIVE ENV.
+
+CONTINUOUS DELIVERY: DEPLOYING THE APPLICATION TO PROD MANUALLY.
+CONTINOUS DEPLOYMENT: DEPLOYING THE APPLICATION TO PROD AUTOMATICALLY.
+
+
+
+PIPELINE:
+WAKEUP -- > DAILY ROUTINES -- > LUNCH -- > PG -- > CLASS
+STEP-BY-STEP EXECUTION OF A PROCESS.
+SERIES OF EVENTS INTERLINKED WITH EACH OTHER.
+
+CODE -- > COMPILE -- > TEST -- > ARTIFACT -- > DEPLOY 
+
+
+JENKINS:
+ITS A FREE AND OPEN SOURCE TOOL.
+JENKINS WRITTEN ON JAVA.
+IT IS PLATFORM INDEPENDENT.
+IT CONSIST OF PLUGINS.
+WE HAVE COMMUNITY SUPPORT.
+IT CAN AUTOMATE ENTIRE SDLC.
+IT IS OWNED BY SUN MICRO SYSTEM AS HUDSON.
+HUDSON IS PAID VERSION.
+LATER ORACLE BROUGHT HUDSON AND MAKE IT FREE.
+LATER HUDSON WAS RENAMED AS JENINS.
+INVENTOR: Kohsuke Kawaguchi
+PORT NUMBER: 8080
+
+
+SETUP: Craete an EC2 and Include all traffic in sg
+
+#STEP-1: INSTALLING GIT JAVA-1.8.0 MAVEN 
+yum install git java-1.8.0-openjdk maven -y
+
+#STEP-2: GETTING THE REPO (jenkins.io --> download -- > redhat)
+sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+
+#STEP-3: DOWNLOAD JAVA11 AND JENKINS
+amazon-linux-extras install java-openjdk11 -y
+yum install jenkins -y
+update-alternatives --config java
+
+#STEP-4: RESTARTING JENKINS (when we download service it will on stopped state)
+systemctl start jenkins.service
+systemctl status jenkins.service
+
+CONNECT:
+copy-public-ip:8080 (browser)
+cat /var/lib/jenkins/secrets/initialAdminPassword (server)
+paster password on browser -- > installing plugins --- > user details -- > start
+
+
+
+CREATING A JOB:
+NEW ITEM -- > NAME: ABC -- > FREESTYLE -- > OK -- > SCM -- > GIT -- > REPOURL: https://github.com/devopsbyraham/jenkins-java-project.git -- >Build Steps -- > ADD Build Steps -- > Execute shell -- > mvn clean package -- > save -- > build now
+
+WORKSPACE: where your job output is going to be stored
+Default: /var/lib/jenkins/workspace
+
+====================================================================
+
+SETTING CI SERVER USING SCRIPT:
+
+CREATE A SERVER
+sudo -i 
+
+vim jenkins.sh
+
+#STEP-1: INSTALLING GIT JAVA-1.8.0 MAVEN 
+yum install git java-1.8.0-openjdk maven -y
+
+#STEP-2: GETTING THE REPO (jenkins.io --> download -- > redhat)
+sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+
+#STEP-3: DOWNLOAD JAVA11 AND JENKINS
+amazon-linux-extras install java-openjdk11 -y
+yum install jenkins -y
+update-alternatives --config java
+
+#STEP-4: RESTARTING JENKINS (when we download service it will on stopped state)
+systemctl start jenkins.service
+systemctl status jenkins.service
+
+exit
+
+sh jenkins.sh
+
+
+VARIABLES:
+it is used to store values that are going to change frequently.
+ex: date, season -----
+
+1. USER DEFINED VARIABLES: these are defined by user
+a. Local Variable: Variable will work inside of job.
+
+NEW ITEM -- > NAME: ABC -- > FREESTYLE -- > OK -- > BUILD -- >EXECUTE SHELL
+name=raham
+echo "hai all my name is $name, $name is from hyderabad, $name is teaching devops"
+
+
+b. Global Variable: Variable will work outside of job.
+
+Dashboard -- > Manage Jenkins -- > System -- > Global properties  -- > Environment variables -- > add : Name: name value: raham -- > save 
+
+NOTE: while defining variables spaces will not be given.
+
+Limitation: some values cant be defined because these values will change build by build.
+
+2. JENKINS ENV VARIABLES: these are defined by Jenkins itself.
+a. these variables can be change from build to build.
+b. these variables will be on upper case.
+c. these variables can be defined only once.
+
+printenv: gives all env vars of jenkins
+
+ADMIN TASKS:
+1. CHANGING PORT NUMBER OF JENKINS:
+
+vim /usr/lib/systemd/system/jenkins.service
+line-67: 8080=8090 -- > save and exit
+systemctl daemon-reload
+systemctl restart jenkins.service
+
+2. CHANGING WORKSPACE:
+
+WORKSPACE: its a place all you job outputs will store.
+DefaultL /var/lib/jenkins/workspace
+
+mkdir raham
+cd raham
+chown jenkins:jenkins /root
+chown jenkins:jenkins /root/raham
+
+job -- > Configure -- > advance -- > Use custom workspace: /root/raham -- > save
+build now -- > the output will be stored on custom workspace.
+
