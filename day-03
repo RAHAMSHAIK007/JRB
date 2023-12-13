@@ -1,0 +1,66 @@
+
+CRON JOB: We can schedule the jobs that need to be run at a particular intervals.
+here we use cron syntax
+cron syntax is having * * * * *
+each * is separated by space
+
+*	: minutes
+*	: hours
+*	: date
+*	: month
+*	: day of week (sun=0, mon=1 ----)
+
+9:40 13 DEC wed
+40 9 13 12 3
+
+8:56 pm 17 aug fri
+56 20 17 8 5
+
+limitation: it will not check the code is changed or not.
+
+
+POLL SCM: 
+in pollscm we will set time limit for the jobs.
+if dev commit the code it will wait until the time is done.
+in given time if we have any changes on code it will generate a build
+
+create a ci job -- > Build Triggers -- > poll scm -- > * * * * * -- > save
+commit the changes in GitHub then wait for 1 min.
+
+1. in pollscm, we need to wait for the time we set.
+2. we will get the last commit only.
+
+WEBHOOK: it will trigger build the moment we change the code.
+here we need not to wait for the build.
+
+repo -- > settings -- > webhooks -- > add webhook -- > Payload URL (jenkins url) -- > http://35.180.46.134:8080/github-webhook/  -- > Content type -- > application/json -- > add
+
+create ci job -- > Build Triggers: GitHub hook trigger for GITScm polling -- > save
+
+Build executor means number of parallel builds we can run 
+
+Dashboard -- > Build executor status -- > Nodes -- > Built-In Node -- > Configure -- > Number of executors: 4 -- > save 
+
+job -- > selecet -- > Execute concurrent builds if necessary -- > save and build for 5 times
+
+THROTTLE BUILD:
+
+To restrict the builds in a certain time or intervals.
+if we dont rsetrict due to immediate builds jenkins might crashdown.
+
+by default jenkins will not do couurent builds.
+we need to enable this option in configuration.
+
+Execute concurrent builds if necessary -- > tick it
+
+create a ci job -- > configure -- > Throttle builds -- > Number of builds: 2 -- > time period : hours -- > save
+
+LINKEDJOB: ONE JOB WILL BUILD AFTER OTHER JOB IS BUILD.
+UPSTREAM
+DOWNSTRAM
+
+BUILD SCRIPTS: to make jenkins builds from remote loc using script/
+give token 
+give url on other browser.
+
+if jenkins is crashed restart the server
