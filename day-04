@@ -40,7 +40,6 @@ S	: STEPS
 
 SINGLE STAGE: this pipeline will have only one stage.
 
-
 pipeline {
     agent any 
     
@@ -53,18 +52,6 @@ pipeline {
     }
 }
 
-
-pipeline {
-    agent any 
-    
-    stages {
-        stage('raham') {
-            steps {
-                sh 'touch file2'
-            }
-        }
-    }
-}
 
 MULTI STAGE: this pipeline will have more than one stage.
 
@@ -86,23 +73,6 @@ pipeline {
     }
 }
 
-EXAMPLE-2:
-pipeline {
-    agent any
-    
-    stages {
-        stage('cpu') {
-            steps {
-                sh 'lscpu'
-            }
-        }
-        stage('mem') {
-            steps {
-                sh 'lsmem'
-            }
-        }
-    }
-}
 
 
 CI PIPELINE:
@@ -193,25 +163,6 @@ pipeline {
     }
 }
 
-EXAMPLE-2:
-pipeline {
-    agent any
-    
-    stages {
-        stage('one') {
-            steps {
-                git 'https://github.com/devopsbyraham/jenkins-java-project.git'
-                sh '''
-                mvn compile
-                mvn test
-                mvn package
-                mvn install
-                mvn clean package
-                '''
-            }
-        }
-    }
-}
 
 USER INPUT:
 pipeline {
@@ -329,26 +280,23 @@ ALTERNATIVES: NGINX, IIS, WEBSPHERE, JBOSS, GLASSFISH
 
 
 SETUP:
-INSTALL JAVA: amazon-linux-extras install java-openjdk11 -y
-
-STEP-1: DOWNLOAD TOMCAT (dlcdn.apache.org)
+vim tomcat.sh
+#
+amazon-linux-extras install java-openjdk11 -y
 wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.83/bin/apache-tomcat-9.0.83.tar.gz
-
-STEP-2: EXTRACT THE FILES
 tar -zxvf apache-tomcat-9.0.83.tar.gz
-
-STEP-3: CONFIGURE USER, PASSWORD & ROLES
-vim apache-tomcat-9.0.83/conf/tomcat-users.xml
-
- 56   <role rolename="manager-gui"/>
- 57   <role rolename="manager-script"/>
- 58   <user username="tomcat" password="raham123" roles="manager-gui, manager-script"/>
-
-STEP-4: DELETE LINE 21 AND 22
-vim apache-tomcat-9.0.83/webapps/manager/META-INF/context.xml
-
-STEP-5: STARTING TOMCAT
+sed -i '56  a\<role rolename="manager-gui"/>' apache-tomcat-9.0.83/conf/tomcat-users.xml
+sed -i '57  a\<role rolename="manager-script"/>' apache-tomcat-9.0.83/conf/tomcat-users.xml
+sed -i '58  a\<user username="tomcat" password="raham123" roles="manager-gui, manager-script"/>' apache-tomcat-9.0.83/conf/tomcat-users.xml
+sed -i '59  a\</tomcat-users>' apache-tomcat-9.0.83/conf/tomcat-users.xml
+sed -i '56d' apache-tomcat-9.0.83/conf/tomcat-users.xml
+sed -i '21d' apache-tomcat-9.0.83/webapps/manager/META-INF/context.xml
+sed -i '22d'  apache-tomcat-9.0.83/webapps/manager/META-INF/context.xml
 sh apache-tomcat-9.0.83/bin/startup.sh
+#
+
+NOTE:
+copy code from # to # and run the script i.e, sh tomcat.sh
 
 CONNECTION:
 COPY PUBLIC IP:8080 
@@ -394,9 +342,9 @@ pipeline {
             steps {
                 deploy adapters: [
                    tomcat9(
-                    credentialsId: '056c3140-9f77-44c0-8b85-1f1435b918ea',
+                    credentialsId: 'give cred id that you create',
                     path: '',
-                    url: 'http://3.84.101.170:8080/'
+                    url: 'http://3.84.101.170:8080/'#(give tomcat url)
                     )
                 ],
                 contextPath: 'netflix',
