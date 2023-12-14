@@ -1,0 +1,407 @@
+
+PIPELINE: STEP-BY-STEP EXECUTION OF A PROCESS.
+SERIES OF EVENTS INTERLINKED WITH EACH OTHER.
+
+CODE --- > BUILD  -- > TEST --- > ARTIFACT  --- > DEPLOYMENT (DEV/TEST/UAT/PROD) 
+
+ARTIFACT:
+It is the final product of the code.
+to create an artifact we need to use build too1.
+based on the programming language your build tool will change.
+
+TYPES OF ARTIFACTS:
+1. JAR: JAVA ARCHIVE 		: Backend 		: WEB-INF/lib
+2. WAR: WEB ARCHIVE		: Frontend + backend	: webapp
+3. EAR: ENTERPRISE ARCHIVE	: jar + war
+
+
+why to use ?
+to automate the work.
+to have clarity about the stage.
+
+TYPES:
+1. DECLARATIVE
+2. SCRPTED
+
+pipeline syntax:
+to write the pipeline we use DSL.
+We use Groovy Script for jenkins Pipeline.
+it consists of blocks that include stages.
+it includes () & {} braces.
+
+SHORTCUT: PASSS
+
+P	: PIPELINE
+A	: AGENT
+S	: STAGES
+S	: STAGE
+S	: STEPS 
+
+
+SINGLE STAGE: this pipeline will have only one stage.
+
+
+pipeline {
+    agent any 
+    
+    stages {
+        stage('abc') {
+            steps {
+               sh 'touch file1'
+            }
+        }
+    }
+}
+
+
+pipeline {
+    agent any 
+    
+    stages {
+        stage('raham') {
+            steps {
+                sh 'touch file2'
+            }
+        }
+    }
+}
+
+MULTI STAGE: this pipeline will have more than one stage.
+
+EXAMPLE-1:
+pipeline {
+    agent any 
+    
+    stages {
+        stage('raham') {
+            steps {
+                sh 'touch file3'
+            }
+        }
+        stage('vijay') {
+            steps {
+                sh 'touch file4'
+            }
+        }
+    }
+}
+
+EXAMPLE-2:
+pipeline {
+    agent any
+    
+    stages {
+        stage('cpu') {
+            steps {
+                sh 'lscpu'
+            }
+        }
+        stage('mem') {
+            steps {
+                sh 'lsmem'
+            }
+        }
+    }
+}
+
+
+CI PIPELINE:
+
+pipeline {
+    agent any
+    
+    stages {
+        stage('checkout') {
+            steps {
+                git 'https://github.com/devopsbyraham/jenkins-java-project.git'
+            }
+        }
+        stage('build') {
+            steps {
+                sh 'mvn compile'
+            }
+        }
+        stage('test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+        stage('Artifact') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+    }
+}
+
+PIPELINE AS A CODE: multiple commands or action inside a single stage.
+
+pipeline {
+    agent any
+    
+    stages {
+        stage('one') {
+            steps {
+                git 'https://github.com/devopsbyraham/jenkins-java-project.git'
+                sh 'mvn compile'
+                sh 'mvn test'
+                sh 'mvn clean package'
+            }
+        }
+    }
+}
+
+PAAC MULTI STAGE:
+pipeline {
+    agent any
+    
+    stages {
+        stage('one') {
+            steps {
+                git 'https://github.com/devopsbyraham/jenkins-java-project.git'
+                sh 'mvn compile'
+            }
+        }
+        stage('two') {
+            steps {
+                sh 'mvn test'
+                sh 'mvn clean package'
+            }
+        }
+    }
+}
+
+
+PAAC OVER SINGLE SHELL: to run all commands inside a single shell.
+we need to use 3 ''' and close '''
+
+EXAMPLE-1:
+pipeline {
+    agent any
+    
+    stages {
+        stage('one') {
+            steps {
+                git 'https://github.com/devopsbyraham/jenkins-java-project.git'
+                sh '''
+                mvn compile
+                mvn test
+                mvn clean package
+                '''
+            }
+        }
+    }
+}
+
+EXAMPLE-2:
+pipeline {
+    agent any
+    
+    stages {
+        stage('one') {
+            steps {
+                git 'https://github.com/devopsbyraham/jenkins-java-project.git'
+                sh '''
+                mvn compile
+                mvn test
+                mvn package
+                mvn install
+                mvn clean package
+                '''
+            }
+        }
+    }
+}
+
+USER INPUT:
+pipeline {
+    agent any
+    
+    stages {
+        stage('checkout') {
+            steps {
+                git 'https://github.com/devopsbyraham/jenkins-java-project.git'
+            }
+        }
+        stage('build') {
+            steps {
+                sh 'mvn compile'
+            }
+        }
+        stage('test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+        stage('Artifact') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+        stage('Deployment') {
+            input {
+                message "do you want to continue"
+                ok "yes"
+            }
+            steps {
+                echo "my code is deployed"
+            }
+        }
+    }
+}
+
+COLORS:
+GREEN	: SUCCESS
+RED	: FAILED
+BLUE	: PROCESSING
+BLACK	: STOP
+ORANGE	: MISSING DEPENDENCIES
+
+
+=============================================================
+
+MASTER AND SLAVE:
+it is used to distribute the builds.
+it reduce the load on jenkins server.
+communication blw master and slave is ssh.
+Here we need to install agent (java-11).
+slave can use any platform.
+label = way of assingning work for slave.
+
+SETUP:
+#STEP-1 : Create a server and install java-11
+amazon-linux-extras install java-openjdk11 -y
+
+#STEP-2: SETUP THE SLAVE SERVER
+Dashboard -- > Manage Jenkins -- > Nodes & Clouds -- > New node -- > nodename: abc -- > permanaent agent -- > save 
+
+CONFIGURATION OF SALVE:
+
+Number of executors : 3 #Number of Parallel builds
+Remote root directory : /tmp #The place where our output is stored on slave sever.
+Labels : swiggy #place the op in a particular slave
+useage: last option
+Launch method : last option 
+Host: (your privte ip)
+Credentials -- > add -- >jenkins -- > Kind : ssh username with privatekey -- > username: ec2-user 
+privatekey : pemfile of server -- > save -- > 
+Host Key Verification Strategy: last option
+
+DASHBOARD -- > JOB -- > CONFIGURE -- > RESTRTICT WHERE THIS JOB RUN -- > LABEL: SLAVE1 -- > SAVE
+
+BUILD FAILS -- > WHY -- > WE NEED TO INSTALL PACKAGES
+yum install git java-1.8.0-openjdk maven -y
+
+
+pipeline {
+    agent {
+        label 'two'
+    }
+    
+    stages {
+        stage('one') {
+            steps {
+                git 'https://github.com/devopsbyraham/jenkins-java-project.git'
+                sh '''
+                mvn compile
+                mvn test
+                mvn package
+                mvn install
+                mvn clean package
+                '''
+            }
+        }
+    }
+}
+
+
+TOMCAT:
+
+ITS A WEB APPLICATION SERVER USED TO DEPLOY JAVA APPLICATIONS.
+AGENT: JAVA-11
+PORT: 8080
+WE CAN DEPLOY OUR ARTIFACTS.
+ITS FREE AND OPENSOURCE
+IT IS WRITTEN ON JAVA LANGUAGE.
+YEAR: 1999 
+
+ALTERNATIVES: NGINX, IIS, WEBSPHERE, JBOSS, GLASSFISH
+
+
+SETUP:
+INSTALL JAVA: amazon-linux-extras install java-openjdk11 -y
+
+STEP-1: DOWNLOAD TOMCAT (dlcdn.apache.org)
+wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.83/bin/apache-tomcat-9.0.83.tar.gz
+
+STEP-2: EXTRACT THE FILES
+tar -zxvf apache-tomcat-9.0.83.tar.gz
+
+STEP-3: CONFIGURE USER, PASSWORD & ROLES
+vim apache-tomcat-9.0.83/conf/tomcat-users.xml
+
+ 56   <role rolename="manager-gui"/>
+ 57   <role rolename="manager-script"/>
+ 58   <user username="tomcat" password="raham123" roles="manager-gui, manager-script"/>
+
+STEP-4: DELETE LINE 21 AND 22
+vim apache-tomcat-9.0.83/webapps/manager/META-INF/context.xml
+
+STEP-5: STARTING TOMCAT
+sh apache-tomcat-9.0.83/bin/startup.sh
+
+CONNECTION:
+COPY PUBLIC IP:8080 
+manager apps -- > username: tomcat & password: raham123
+
+STEPS:
+1. CREATE JENKINS SERVER 
+2. CREATE 2 SLAVES AND CONFIGURE THEM TO JENKINS
+3. INSTALL TOMCAT ON SLAVE
+4. ADD CREDENTIALS OF SLAVE TO JENKINS
+5. INSTALL DEPLOY TO CONTAINER PLUGIN
+6. WRITE AND RUN PIPELINE 
+
+
+
+
+DEPLOYMENT:
+pipeline {
+    agent any
+    
+    stages {
+        stage('checkout') {
+            steps {
+                git 'https://github.com/devopsbyraham/jenkins-java-project.git'
+            }
+        }
+        stage('build') {
+            steps {
+                sh 'mvn compile'
+            }
+        }
+        stage('test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+        stage('Artifact') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+        stage('Deployment') {
+            steps {
+                deploy adapters: [
+                   tomcat9(
+                    credentialsId: '056c3140-9f77-44c0-8b85-1f1435b918ea',
+                    path: '',
+                    url: 'http://3.84.101.170:8080/'
+                    )
+                ],
+                contextPath: 'netflix',
+                war: 'target/*.war'
+            }
+        }
+    }
+}
