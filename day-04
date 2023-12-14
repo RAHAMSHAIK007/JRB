@@ -298,6 +298,9 @@ sh apache-tomcat-9.0.83/bin/startup.sh
 NOTE:
 copy code from # to # and run the script i.e, sh tomcat.sh
 
+TO SHUTDOWN THE TOMCAT SERVER:
+sh apache-tomcat-9.0.83/bin/shutdown.sh
+
 CONNECTION:
 COPY PUBLIC IP:8080 
 manager apps -- > username: tomcat & password: raham123
