@@ -1,0 +1,224 @@
+Automated: Deployment, Installation
+Non-Automated: Server
+To perform end-to-end automation we can use Ansible.
+
+ANSIBLE:
+its a Configuration Management Tool.
+its a free and Opensource.
+Configuration: Hardware and Software 
+Management: Pkgs update, installing, remove ----
+it is used to automate the entire deployment process on multiple servers.
+We install Python on Ansible.
+we use a key-value format for the playbooks.
+
+HISTORY:
+in 2012 dev called Maichel Dehaan who developed ansible.
+After few years RedHat taken the ansible.
+it is platform-independent & will work on all linux flavours.
+
+
+ARCHITECTURE:
+PLAYBOOK: its a file which consist of code
+INVENTORY: its a file which consist ip of nodes
+SSH: used to connect with nodes
+Ansible is Agent less.
+
+SETUP: 
+CREATE 5 SERVERS [1=ANSIBLE, 2=DEV, 2=TEST]
+ALL SERVERS:
+sudo -i
+hostnamectl set-hostname ansible/dev-1/dev-2/test-1/test-2
+sudo -i
+
+passwd root
+vim /etc/ssh/sshd_config (38 & 61 uncommnet both lines)
+systemctl restart sshd
+systemctl status sshd
+hostname -i
+
+ANSIBLE SERVER:
+amazon-linux-extras install ansible2 -y
+yum install python3 python-pip python-dlevel -y
+
+vim /etc/ansible/hosts
+# Ex 1: Ungrouped hosts, specify before any group headers.
+[dev]
+172.31.20.40
+172.31.21.25
+[test]
+172.31.31.77
+172.31.22.114
+
+ssh-keygen
+ssh-copy-id root@private ip of dev-1 -- > yes -- > password -- > ssh private ip -- > ctrl d
+ssh-copy-id root@private ip of dev-2 -- > yes -- > password -- > ssh private ip -- > ctrl d
+ssh-copy-id root@private ip of test-1 -- > yes -- > password -- > ssh private ip -- > ctrl d
+ssh-copy-id root@private ip of test-2 -- > yes -- > password -- > ssh private ip -- > ctrl d
+
+ansible -m ping all
+
+1. ADHOC COMMANDS:
+these are simple Linux commands. 
+these are used for temp works.
+these commands will be over ridden.
+
+ansible all -a "yum install git -y"
+ansible all -a "yum install maven -y"
+ansible all -a "mvn --version"
+ansible all -a "touch file1"
+ansible all -a "touch raham.txt"
+ansible all -a "ls"
+ansible all -a "yum install httpd -y"
+ansible all -a "systemctl status httpd"
+ansible all -a "systemctl start httpd"
+ansible all -a "user add raham"
+ansible all -a "cat /etc/passwd"
+ansible all -a "yum remove git* maven* httpd* -y"
+
+
+2. MODULES:
+its a key-value pair.
+modules are reusable.
+we can use different modules for differnt purposes.
+module flag is -m 
+
+ansible all -m yum -a "name=git state=present"
+ansible all -m yum -a "name=maven state=present"
+ansible all -m yum -a "name=maven state=present"	[present=installed]
+ansible all -m service -a "name=httpd state=started"	[started=resetart]
+ansible all -m service -a "name=httpd state=stopped"	[stopped=stop]
+ansible all -m yum -a "name=http state=absent"		[absent=uninstall]
+ansible all -m user -a "name=vikram state=present"
+ansible all -m user -a "name=vikram state=absent"
+ansible all -m copy -a "src=raham.txt dest=/tmp"
+
+Note: To remove a package completly with its dependencies use * 
+ex: httpd*, git*
+
+
+3. PLAYBOOKS:
+playbooks used to execute multiple modules.
+we can reuse the playbook multiple times.
+in real time we use a playbook to automate our work.
+for deployment, pkg installation ----
+here we use key-value pairs.
+Key-Value can also be called as Dictionary.
+ansible-playbook will be written on YAML syntax.
+YAML = YET ANOTHER MARKUP LANGUAGE
+extension for playbook is .yml or .yaml
+playbook start with --- and end with ... (opt)
+
+
+EX-1:
+
+- hosts: all
+  gather_facts: false
+  tasks:
+    - name: installing git
+      yum: name=git state=present
+
+    - name: installing maven
+      yum: name=maven state=present
+
+    - name: installing apache
+      yum: name=httpd state=present
+
+    - name: starting apache
+      service: name=httpd state=started
+
+    - name: create a user
+      user: name=raham state=present
+
+    - name: copy a file
+      copy: src=abc.txt dest=/root
+
+
+TO EXECUTE: ansible-playbook playbbok.yml
+
+Gather facts: it will get information of worker nodes
+its by default task performed by ansible.
+
+ok=total number of tasks include gather_facts 
+changed= no.of tasks successfully executed
+
+sed -i 's/present/absent/; s/installing/uninstall/' raham.yml
+
+- hosts: all
+  ignore_errors: yes
+  tasks:
+    - name: uninstall git
+      yum: name=git* state=absent
+
+    - name: uninstall maven
+      yum: name=maven* state=absent
+
+    - name: uninstall apache
+      yum: name=httpd* state=absent
+
+    - name: starting apache
+      service: name=httpd state=started
+
+    - name: create a user
+      user: name=raham state=absent
+
+    - name: copy a file
+      copy: src=abc.txt dest=/root
+
+
+ignore_errors: yes -- > ansible will keep executing playbook even if a certain task will fail it will execute the below tasks.
+
+TAGS: To execute or skip specific tasks
+
+- hosts: all
+  tasks:
+    - name: installing git
+      yum: name=git state=present
+      tags: a
+    - name: installing maven
+      yum: name=maven state=present
+      tags: b
+    - name: installing apache
+      yum: name=httpd state=present
+      tags: c
+    - name: starting apache
+      service: name=httpd state=started
+      tags: d
+    - name: create a user
+      user: name=raham state=present
+      tags: e
+    - name: copy a file
+      copy: src=abc.txt dest=/root
+      tags: f
+
+SINGLE TAG: ansible-playbook playbbok.yml --tags a
+MULTI TAG: ansible-playbook playbbok.yml --tags b,c
+SKIP TAG: ansible-playbook playbbok.yml --skip-tags "c"
+MULTI SKIP TAGS: ansible-playbook playbbok.yml --skip-tags "c,d"
+
+sed -i 's/present/absent/; s/installing/uninstall/; s/git/git*/; s/http/httpd*/' raham.yml
+
+LOOPS: used to do work with less code and used for repetable
+
+- hosts: all
+  tasks:
+    - name: installing pkgs
+      yum: name={{item}} state=present
+      with_items:
+        - git
+        - maven
+        - docker
+        - java-1.8.0-openjdk
+        - tree
+
+TO EXECUTE: ansible-playbook playbbok.yml
+
+- hosts: all
+  tasks:
+    - name: installing pkgs
+      yum: name={{item}} state=absent
+      with_items:
+        - git*
+        - maven*
+        - docker*
+        - java-1.8.0-openjdk*
+        - tree*
