@@ -1,0 +1,136 @@
+SETUP MODULE: used to print complete info of nodes
+ansible all -m setup
+ansible all -m setup | grep -i family
+ansible all -m setup | grep -i cpu
+ansible all -m setup | grep -i mem
+ansible all -m setup | grep -i pkg
+
+
+CONDITIONS:
+CLUSTER: Group of servers
+HOMOGENIUS: all servers have having same OS and flavour.
+HETROGENIUS: all servers have different OS and flavour.
+
+used to execute this module when we have different Clusters.
+
+RedHat=yum
+Ubuntu=apt
+
+- hosts: all
+  tasks:
+    - name: installing git on RedHat
+      yum: name=git state=present
+      when: ansible_os_family == "RedHat"
+    - name: installing git on Debian
+      apt: name=git state=present
+      when: ansible_os_family == "Debian"
+
+
+sed -i 's/present/absent/g' playbbok.yml
+
+- hosts: all
+  tasks:
+    - name: installing git on RedHat
+      yum: name=git state=absent
+      when: ansible_os_family == "RedHat"
+    - name: installing git on Ubuntu
+      apt: name=git state=absent
+      when: ansible_os_family == "Ubuntu"
+
+
+ROLES:
+roles is a way of organizing playbooks in a structured format.
+main purpose of roles is to encapsulate the data.
+we can reuse the roles multiple times.
+length of the playbook is decreased.
+it contains on vars, templates, task -----
+in real time we use roles for our daily activities.
+
+mkdir playbooks
+cd playbooks/
+
+mkdir -p roles/pkgs/tasks
+vim roles/pkgs/tasks/main.yml
+
+- name: installing pkgs
+  yum: name=git state=present
+- name: install maven
+  yum: name=maven state=present
+- name: installing httpd
+  yum: name=httpd state=present
+
+mkdir -p roles/users/tasks
+vim roles/users/tasks/main.yml
+
+- name: create users
+  user: name={{item}} state=present
+  with_items:
+    - uday
+    - naveen
+    - rohit
+    - lokesh
+    - saipallavi
+    - supriya
+
+mkdir -p roles/dep/tasks
+vim roles/dep/tasks/main.yml
+
+- name: deploymemnt
+  debug:
+    msg: "my code is deployed"
+
+.
+├── master.yml
+└── roles
+    ├── dep
+    │   └── tasks
+    │       └── main.yml
+    ├── pkgs
+    │   └── tasks
+    │       └── main.yml
+    └── users
+        └── tasks
+            └── main.yml
+
+vim master.yml
+- hosts: all
+  roles:
+    - dep
+    - user
+    - pkgs
+
+
+- hosts: all
+  tasks:
+    - name: to pring mgs
+      debug:
+        msg: "the node name os: {{ansible_hostname}}, the total mem is:
+          {{ansible_memtotal_mb}}, free mem is {{ansible_memfree_mb}}, the
+          flavour of ec2 is: {{ansible_os_family}}, total cpus is:
+            {{ansible_processor_vcpus}}"
+
+- hosts: all
+  vars:
+    size_total: 8
+  tasks:
+    - name: to pring mgs
+      debug:
+        msg: "the node name os: {{ansible_hostname}}, the total mem is:
+          {{ansible_memtotal_mb}}, free mem is {{ansible_memfree_mb}}, the
+          flavour of ec2 is: {{ansible_os_family}}, totol cpus is:
+            {{ansible_processor_vcpus}}, the blokc size: {{size_total}}"
+
+
+JINJA2 TEMPLATE: used to get the customized op, here its a text file which can extract the variables and these values will change as per time.
+
+LOOKUPS: this module used to get data from files, db and key values
+
+- hosts: dev
+  vars:
+    a: "{{lookup('file', '/root/creds.txt') }}"
+  tasks:
+    - debug:
+        msg: "hai my user name is {{a}}"
+
+cat creds.txt
+user=raham
