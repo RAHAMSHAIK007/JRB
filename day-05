@@ -1,0 +1,88 @@
+RBAC:
+
+RBAC: ROLE BASE ACCESS CONTROL.
+TO restrict the user to perform all from performing in jenkins.
+
+suresh	= fresher
+ramesh	= exp 
+
+STEP-1: USER CREATION
+manage jenkins -- > users -- > create users -- > suresh: fresher 
+
+STEP-2: PLUGIN DOWNLOADING
+Dashboard
+Manage Jenkins
+Plugins
+Available plugin
+Role-based Authorization Strategy  
+
+STEP-3: CONFIGURE THE PLUGIN
+Dashboard
+Manage Jenkins
+Security
+Authorization 
+Role-based  Strategy  
+SAVE
+
+STEP-4: MANAGE AND ASSIGN USERS
+manage roles -- > add -- > fresher & exp -- > fresher: overall read & exp: admin -- > save
+assign roles -- > add user -- > rajesh: fresher & ravi: exp -- > save
+
+
+PIPELINE:
+pipeline {
+    agent {
+        label 'slave1'
+    }
+    
+    stages {
+        stage('checkout') {
+            steps {
+                git 'https://github.com/devopsbyraham/jenkins-java-project.git'
+            }
+        }
+        stage('build') {
+            steps {
+                sh 'mvn compile'
+            }
+        }
+        stage('test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+        stage('code quality') {
+            steps {
+                sh '''
+                mvn sonar:sonar \
+                  -Dsonar.projectKey=netflix \
+                  -Dsonar.host.url=http://44.211.167.174:9000 \
+                  -Dsonar.login=130cf098299cf72cef2341640b441ca1e01b1334
+                '''
+            }
+        }
+        stage('Artifact') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+        stage('Nexus') {
+            steps {
+                nexusArtifactUploader artifacts: [[artifactId: 'NETFLIX', classifier: '', file: 'target/NETFLIX-1.2.2.war', type: '.war']], credentialsId: '2ddc080e-391d-49aa-9fe6-47cb9ad2182b', groupId: 'in.RAHAM', nexusUrl: '44.204.78.94:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'devops', version: '1.2.2'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                deploy adapters: [
+                  tomcat9(
+                    credentialsId: 'af49cdec-a8a3-4e80-bba5-3a0cbfa6b955',
+                    path: '',
+                    url: 'http://3.83.100.99:8080/'
+                  )    
+                ],
+                contextPath: 'netflix',
+                war: 'target/*.war'
+            }
+        }
+    }
+}
