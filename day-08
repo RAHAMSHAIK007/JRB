@@ -1,0 +1,106 @@
+VARIABLES:
+used to define a value inside/outside of playbook.
+
+Static var: defined inside the playbook and it not be changed.
+
+- hosts: all
+  vars:
+    a: git
+    b: maven
+  tasks:
+    - name: installing git*
+      yum: name={{a}} state=present
+
+    - name: installing maven
+      yum: name={{b}} state=present
+
+
+Dynamic var: defined outside the playbook and it will be changes.
+
+- hosts: all
+  vars:
+  tasks:
+    - name: installing git*
+      yum: name={{a}} state=present
+
+    - name: installing maven
+      yum: name={{b}} state=present
+
+ansible-playbook raham.yml --extra-vars "a=git b=maven"
+
+ANSIBLE VAULT:
+it is used to encrypt the files, playbooks ----
+Technique: AES256 (USED BY FACEBOOK)
+vault will store our data very safely and securely.
+if we want to access any data which is in the vault we need to give a password.
+Note: we can restrict the users to access the playbook aslo.
+
+ansible-vault create raham.txt		: to create a vault
+ansible-vault edit raham.txt		: to edit a vault
+ansible-vault rekey raham.txt		: to change password for a vault
+ansible-vault decrypt raham.txt		: to decrypt the content	
+ansible-vault encrypt raham.txt		: to encrypt the content	
+ansible-vault view raham.txt		: to show the content without decrypt
+
+
+PIP: its a pkg manager used to install python libs/modules
+
+Redhat: yum
+ubuntu: apt
+python: pip
+
+ansible all -a "yum install pip -y"
+
+- hosts: all
+  tasks:
+    - name: installing pip
+      yum: name=pip state=present
+
+    - name: installing NumPy
+      pip: name=NumPy state=present
+
+    - name: installing Pandas
+      pip: name=Pandas state=present
+
+
+for every task in  ansible we can set time limit
+if the task is not performed in that tim limit ansible will stop playbook execution
+this is called as asynchronous and polling.
+
+- hosts: all
+  tasks:
+    - name: sleeping
+      command: sleep 30
+      async: 10
+      poll: 20
+    - name: install git
+      yum: name=git state=present
+
+ANSIBLE-GALAXY:
+Ansible Galaxy is a galaxy website where users can share roles and to a command-line tool for installing, creating, and managing roles.
+
+ansible-galaxy init raham
+ansible-galaxy search elasticsearch
+ansible-galaxy search elasticsearch --author alikins
+ansible-galaxy install alikns.elasticsearch
+cd /home/ansible/.ansible/roles/
+
+USER INFO: 
+Go to the ansible-galaxy website and select a username 
+ansible-galaxy info bonddim.linux
+ansible-galaxy collection install bonddim.linux
+
+
+ASSIGNMENT:
+
+L	: LINUX
+A	: APACHE
+M	: MYSQL
+P	: PYTHON
+install on all servers and uninstall.
+
+dev-1: apache -- > a
+dev-2: mysql  -- > ms
+test-1: python -- > py
+test-2: NumPy and Pandas -- > n & p
+
