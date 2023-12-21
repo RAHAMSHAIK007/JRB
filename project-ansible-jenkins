@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('checkout') {
+            steps {
+                git 'https://github.com/summu97/jenkins-java-project.git'
+            }
+        }
+        stage ('build'){
+            steps {
+                sh 'mvn compile'
+            }
+        }
+        stage ('test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+        stage ('artifact') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+        stage ('nexus') {
+            steps {
+                nexusArtifactUploader artifacts: [[artifactId: 'myweb', classifier: '', file: 'target/myweb-1.2.3.war', type: '.war']], credentialsId: '20d3d740-8e7c-4994-95ed-57261696f691', groupId: 'in.javahome', nexusUrl: '18.142.50.68:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'abcde', version: '1.2.3'
+            }
+        }
+        stage ('deploy') {
+            steps {
+                ansiblePlaybook credentialsId: '304feef9-30d1-4777-bc05-623f8b3fce66', disableHostKeyChecking: true, installation: 'ansible', inventory: '/etc/ansible/hosts', playbook: '/etc/ansible/playbook.yml', vaultTmpPath: ''
+            }
+        }
+    }   
+}
