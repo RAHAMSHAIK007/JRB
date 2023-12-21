@@ -1,0 +1,130 @@
+
+TOMCAT SETUP:
+
+code from github: 
+
+https://github.com/RAHAMSHAIK007/all-setups.git
+
+Install jenkins on ansible  server:
+
+ANSIBLE JENKINSINTEGRATION:
+
+Download ansible plugin
+Manage Jenkins -- > Tools -- > Ansible -- > Name: ansible Path: /usr/bin -- > save
+Write Ci Pipeline to generate war file and add ansible like this
+Sample Step: Ansible playbook: 
+Ansible tool: ansible
+Playbook file path in workspace: /etc/ansible/playbook.yml
+Inventory file path in workspace: /etc/ansible/hosts
+SSH connection credentials: username & password of ansible nodes
+Disable the host SSH key check: yes
+Generate Pipeline Script
+
+PIPELINE:
+pipeline {
+    agent any
+    
+    stages {
+        stage('checkout') {
+            steps {
+                git branch: 'release', url: 'https://github.com/devopsbyraham/jenkins-java-project.git'
+            }
+        }
+        stage('build') {
+            steps {
+                sh 'mvn compile'
+            }
+        }
+        stage('test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+        stage('Artifact') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                ansiblePlaybook credentialsId: 'f105faae-40d8-4d7d-a160-3ed45305573a', disableHostKeyChecking: true, installation: 'ansible', inventory: '/etc/ansible/hosts', playbook: '/etc/ansible/playbook.yml', vaultTmpPath: ''
+            }
+        }
+    }
+}
+
+PLAYBOOK:
+
+- hosts: all
+  tasks:
+    - name: copying war file
+      copy:
+        src: /var/lib/jenkins/workspace/ansible-pipeline/target/NETFLIX-1.2.2.war
+        dest: /root/tomcat/webapps
+
+===================================================================
+PROMETHEUS:
+
+Prometheus is an open-source monitoring system that is especially well-suited for cloud-native environments, like Kubernetes. 
+It can monitor the performance of your applications and services.
+it will sends an alert you if there are any issues. 
+It has a powerful query language that allows you to analyze the data.
+It pulls the real-time metrics, compresses and stores  in a time-series database.
+Prometheus is a standalone system, but it can also be used in conjunction with other tools like Alertmanager to send alerts based on the data it collects.
+it can be integration with tools like PagerDuty, Teams, Slack, Emails to send alerts to the appropriate on-call personnel.
+ it collects, and it also has a rich set of integrations with other tools and systems.
+For example, you can use Prometheus to monitor the health of your Kubernetes cluster, and use its integration with Grafana to visualize the data it collects.
+
+COMPONENTS OF PROMETHEUS:
+Prometheus is a monitoring system that consists of the following components:
+
+A main server that scrapes and stores time series data
+A query language called PromQL is used to retrieve and analyze the data
+A set of exporters that are used to collect metrics from various systems and applications
+A set of alerting rules that can trigger notifications based on the data
+An alert manager that handles the routing and suppression of alerts
+
+GRAFANA:
+Grafana is an open-source data visualization and monitoring platform that allows you to create dashboards to visualize your data and metrics. 
+It is a popular choice for visualizing time series data, and it integrates with a wide range of data sources, including Prometheus, Elasticsearch, and InfluxDB.
+A user-friendly interface that allows you to create and customize dashboards with panels that display your data in a variety of formats, including graphs, gauges, and tables. You can also use Grafana to set up alerts that trigger notifications when certain conditions are met.
+Grafana has a rich ecosystem of plugins and integrations that extend its functionality. For example, you can use Grafana to integrate with other tools and services, such as Slack or PagerDuty, to receive alerts and notifications.
+Grafana is a powerful tool for visualizing and monitoring your data and metrics, and it is widely used in a variety of industries and contexts.
+
+CONNECTION:
+SETUP BOTH PROMETHEUS & GRAFAN FROM BELOW LINK
+https://github.com/RAHAMSHAIK007/all-setups.git
+
+pROMETHERUS: 9090
+NODE EXPORTER: 9100
+GRAFANA: 3000
+
+CONNECTING PROMETHEUS TO GARAFANA:
+connect to grafana dashboard -- > Data source -- > add -- > promethus -- > url of prometheus -- > save & test -- > top of page -- > explore data -- > if you want run some queries -- > top -- > import dashboard -- > 1860 -- > laod --- > prometheus -- > import 
+
+amazon-linux-extras install epel -y
+yum install strees -y
+
+  SYNOPSIS:
+PROMETEUS:
+its a free & opensource monitoring tool
+it collects metrics of nodes
+we use PromQL language 
+it store metrics on time series database
+we can integrate promethus with tools like
+pagerduty, slack and email to send notifications
+PORT: 9090
+
+GRAFANA:
+its a visualization tool used to create dashboard.
+Datasource is main component (from where you are getting data)
+Prometheus will show data but cant create dashboards
+Dashboards: create, Import  
+we can integrate Grafana with tools like
+pagerduty, slack and email to send notifications
+PORT: 3000
+
+NODE EXPORTER:
+collects metrics of worker nodes
+in each worker node we need to install node exporter
+Port: 9100
