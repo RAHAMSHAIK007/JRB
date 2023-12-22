@@ -1,0 +1,201 @@
+MONOLITHIC: multiple services are deployed on single server with single database.
+
+MICRO SERVICES: multiple services are deployed on multiple servers with multiple database.
+
+BASED ON USERS AND APP COMPLEXITY WE NEED TO SELECT THE ARCHITECTURE.
+
+FACTORS AFFECTIONG FOR USING MICRO SERVICES:
+F-1: COST 
+F-2: MAINTAINANCE
+
+CONTAINERS:
+its same as a server/vm.
+it will not have any operating system.
+os will be on images.
+(SERVER=AMI, CONTAINER=IMAGE)
+
+DOCKER: 
+Its an free & opensource tool.
+it is platform independent.
+used to create, run & deploy applications on containers.
+it is introduced on 2013 by solomenhykes & sebastian phal.
+We used GO laguage to develope the docker.
+here we write files on YAML.
+before docker user faced lot of problems, but after docker there is no issues with the application.
+
+
+CONTAINERIZATION:
+Process of packing an application with its dependencies.
+ex: PUBG
+
+APP= PUBG & DEPENDECY = MAPS
+APP= CAKE & DEPENDECY = KNIFE
+
+os level of virtualization.
+
+VIRTUALIZATION:
+able to create resouce with our hardware properties.
+
+ARCHITECTURE & COMPONENTS:
+client: it will interact with user
+user gives commands and it will be executed by docker client
+
+daemon: manages the docker components(images, containers, volumes)
+
+host: where we install docker (ex: linux, windows, macos)
+
+Registry: manages the images.
+
+ARCHITECTURE OF DOCKER:
+yum install docker -y    #client
+systemctl start docker	 #client,Engine
+systemctl status docker
+
+
+COMMANDS:
+docker pull ubuntu	: pull ubuntu image
+docker images		: to see list of images
+docker run -it --name cont1 ubuntu : to create a container
+-it (interactive) - to go inside a container
+cat /etc/os-release	: to see os flavour
+
+
+apt update -y	: to update 
+redhat=yum
+ubuntu=apt
+without update we cant install any pkg in ubuntu
+
+
+apt install git -y
+apt install apache2 -y
+service apache2 start
+service apache2 status
+
+docker p q		: to exit container
+docker ps -a		: to list all containers
+docker attach cont_name	: to go inside container
+docker stop cont_name	: to stop container
+docker start cont_name	: to start container
+docker pause cont_name	: to pause container
+docker unpause cont_name: to unpause container
+docker inspect cont_name: to get complete info of a container
+docker rm cont_name	: to delete a container
+
+STOP: will wait to finish all process running inside container
+KILL: wont wait to finish all process running inside container
+
+OS-LEVEL OF VIRTAULIZATION:
+
+docker pull ubuntu
+docker run -it --name cont1 ubuntu
+apt update -y
+apt install apache2 -y
+apt install mysql-server -y
+apt install default-jre default-jdk -y
+touch file{1..5}
+
+docker commit cont1 image1
+docke run -it --name cont2 image1
+
+DOCKERFILE:
+it is an automation way to create image.
+here we use components to create image.
+in Dockerfile D must be Capiatl.
+Components also capital.
+here we can create image directly without container help.
+
+
+COMPONENTS:
+
+FROM		: used to base image
+RUN		: used to run linux commands (During image creation)
+CMD		: used to run linux commands (After container creation)
+ENTRYPOINT	: high priority than cmd
+COPY		: to copy local files to conatiner
+ADD		: to copy internet files to conatiner
+WORKDIR		: to open req directory
+LABEL		: to add labels for docker file
+ENV		: to set env variables (inside container)
+ARGS		: to pass env variables (outside containers)
+EXPOSE		: to give port number
+
+EX1:
+Vim Dockerfile
+
+FROM ubuntu
+RUN apt update -y
+RUN apt install apache2 -y
+RUN apt install mysql-server -y
+
+To run: docker build -t raham:v1 .
+docker images
+docker run -it --name cont3 raham:v1 
+
+EX-2:
+
+FROM ubuntu
+RUN apt update -y
+RUN apt install apache2 -y
+RUN apt install mysql-server -y
+RUN apt install default-jre default-jdk -y
+
+To run: docker build -t raham:v2 .
+docker images
+docker run -it --name cont4 raham:v2 
+
+EX-3:
+
+FROM ubuntu
+RUN apt update -y
+RUN apt install apache2 -y
+RUN apt install mysql-server -y
+RUN apt install default-jre default-jdk -y
+RUN apt install tree -y
+CMD apt install maven -y
+
+To run: docker build -t raham:v3 .
+docker images
+docker run -it --name cont5 raham:v3
+
+EX-4:
+
+FROM ubuntu
+RUN apt update -y
+RUN apt install apache2 -y
+RUN apt install mysql-server -y
+COPY index.html /tmp
+ADD http://dlcdn.apache.org/tomcat/tomcat-9/v9.0.80/bin/apache-tomcat-9.0.80.tar.gz /tmp
+
+To run: docker build -t raham:v4 .
+docker images
+docker run -it --name cont6 raham:v4
+
+EX-5:
+
+FROM ubuntu
+RUN apt update -y
+RUN apt install apache2 -y
+RUN apt install mysql-server -y
+COPY index.html /tmp
+ADD http://dlcdn.apache.org/tomcat/tomcat-9/v9.0.80/bin/apache-tomcat-9.0.80.tar.gz /tmp
+WORKDIR /tmp
+LABEL author rahamshaik
+
+EX-6:
+
+FROM ubuntu
+RUN apt update -y
+RUN apt install apache2 -y
+RUN apt install mysql-server -y
+COPY index.html /tmp
+ADD http://dlcdn.apache.org/tomcat/tomcat-9/v9.0.80/bin/apache-tomcat-9.0.80.tar.gz /tmp
+WORKDIR /tmp
+LABEL author rahamshaik
+ENV client swiggy
+ENV conatiner appcontainer
+EXPOSE 8080
+
+TO STOP ALL CONTAINERS:
+docker stop $(docker ps -a -q)
+docker rm $(docker ps -a -q)
+docker rmi -f $(docker images -a -q)
