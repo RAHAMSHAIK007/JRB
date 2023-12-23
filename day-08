@@ -104,3 +104,13 @@ dev-2: mysql  -- > ms
 test-1: python -- > py
 test-2: NumPy and Pandas -- > n & p
 
+- hosts: all
+  tasks:
+    - name: installing apache
+      yum: name=httpd state=present
+    - name: installing mysql
+      yum: name=mysql state=present
+    - name: installing python
+      yum: name=python3 state=present
+
+
