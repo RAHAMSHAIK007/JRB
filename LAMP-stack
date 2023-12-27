@@ -1,0 +1,47 @@
+The LAMP stack is a popular open-source software stack used for web development. 
+Linux
+Apache
+MySQL
+PHP
+-> PHP is a server-side scripting language used for developing dynamic web pages
+
+1. Install Apache:
+sudo apt update
+sudo apt install apache2
+sudo systemctl start apache2
+sudo systemctl enable apache2  (this is similar to chkconfig)
+
+2. Install MySQL:
+sudo apt install mysql-server
+sudo systemctl start mysql
+sudo systemctl enable mysql
+
+3. Install PHP:
+sudo apt install php libapache2-mod-php php-mysql
+sudo systemctl restart apache2
+
+Test Your LAMP Stack:
+echo "<?php phpinfo(); ?>" | sudo tee /var/www/html/info.php
+
+Additional Considerations:
+Ensure that your firewall allows traffic on the necessary ports (80 for HTTP, 443 for HTTPS).
+Secure your MySQL installation by running the MySQL secure installation script: sudo mysql_secure_installation.
+
+
+for amazon linux:
+sudo yum update
+sudo yum install httpd
+sudo service httpd start
+sudo chkconfig httpd on
+
+sudo yum install mysql-server
+sudo service mysqld start
+sudo chkconfig mysqld on
+
+sudo mysql_secure_installation
+This script will prompt you to set a root password, remove anonymous users, and more.
+
+sudo yum install php php-mysql
+sudo service httpd restart
+
+echo "<?php phpinfo(); ?>" | sudo tee /var/www/html/info.php
