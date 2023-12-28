@@ -99,6 +99,7 @@ NOTE: When you download a command as binary file it need to be on /usr/local/bin
 because all the commands in linux will be on /usr/local/bin 
 and need to give executable permission for that binary file to work as a  command.
 
+A binary file is a computer file that contains data in a format that is not intended for humans to read.
 
 
 POD:
