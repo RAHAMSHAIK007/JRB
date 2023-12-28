@@ -4,6 +4,7 @@ Apache
 MySQL
 PHP
 -> PHP is a server-side scripting language used for developing dynamic web pages
+"stack" refers to a set of software that is commonly used together to enable the hosting of dynamic websites and web applications.
 
 1. Install Apache:
 sudo apt update
