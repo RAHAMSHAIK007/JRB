@@ -1,0 +1,228 @@
+
+DEPLOYMENT:
+deploy -- > rs -- > pods
+we can update the application.
+its high level k8s objects.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: movies
+  labels:
+    app: paytm
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: paytm
+  template:
+    metadata:
+      labels:
+        app: paytm
+    spec:
+      containers:
+        - name: cont1
+          image: nginx:1.14
+
+
+To list deployment	:kubectl get deploy
+To show addtional info	:kubectl get deploy -o wide
+To show complete info	:kubectl describe deploy name-of-deployment
+To delete the deploy	:kubectl delete deploy name-of-deploy
+to get lables of pods 	:kubectl get pods -l app=paytm
+TO scale deploy		:kubectl scale deploy/name-of-deploy --replicas=10 (LIFO)
+To edit deploy		:kubectl edit deploy/name-of-deploy
+to show all pod labels	:kubectl get pods --show-labels
+To delete all pods	:kubectl delete pod --all
+
+kubectl rollout history deploy/movies-rs
+kubectl history rollout deploy/movies-rs
+kubectl rollout undo deploy/movies-rs
+kubectl get po --watch
+
+
+METRIC SERVER:
+
+used to collect resource utilization metrics from each node and container in cluster. 
+The metrics collected include CPU usage, memory usage, and file system usage, among others.
+
+Metrics Server offers:
+
+    A single deployment that works on most clusters (see Requirements)
+    Fast autoscaling, collecting metrics every 15 seconds.
+    Resource efficiency, using 1 milli core of CPU and 2 MB of memory for each node in a cluster.
+    Scalable support up to 5,000 node clusters.
+
+
+METRIC SERVER INSTALLATION:
+
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+minikube addons enable metrics-server #(only for minikube)
+
+kubectl top nodes
+kubectl top pods
+kubectl top po -A
+
+KUBECOLOR:
+wget https://github.com/hidetatz/kubecolor/releases/download/v0.0.25/kubecolor_0.0.25_Linux_x86_64.tar.gz
+tar -zxvf kubecolor_0.0.25_Linux_x86_64.tar.gz
+./kubecolor
+chmod +x kubecolor
+mv kubecolor /usr/local/bin/
+kubecolor get po
+
+
+NAMESPACES:
+
+NAMESPACE: It is used to divide the cluster to multiple teams on real time.
+it is used to isolate the env.
+
+CLUSTER: HOUSE
+NAMESPACES: ROOM
+
+Each namespace is isolated.
+if your are room-1 are you able to see room-2.
+we cant access the objects from one namespace to another namespace.
+
+
+TYPES:
+
+default           : Is the default namespace, all objects will create here only
+kube-node-lease   : it will store object which is taken from one namespace to another.
+kube-public	  : all the public objects will store here.      
+kube-system 	  : by default k8s will create some objects, those are storing on this ns.
+every component in k8s will be create like a pod, it will be stored on kube-system ns.
+
+
+kubectl get pod -n kube-system	: to list all pods in kube-system namespace
+kubectl get pod -n default	: to list all pods in default namespace
+kubectl get pod -n kube-public	: to list all pods in kube-public namespace
+kubectl get po -A		: to list all pods in all namespaces
+kubectl get po --all-namespaces
+
+kubectl create ns dev	: to create namespace
+kubectl config set-context --current --namespace=dev : to switch to the namespace
+kubectl config view --minify | grep namespace : to see current namespace
+kubectl delete ns dev	: to delete namespace
+kubectl delete pod --all: to delete all pods
+
+
+NOTE: By deleting  the ns all objects also gets deleted.
+in real time we use rbac concept to restrict the access from one namespace to another.
+so users cant access/delete ns, because of the restriction we provide.
+we create roles and role bind for the users.
+now user can be able to work on specific resources on specific namespace.
+
+
+    1  vim abc.sh
+    2  sh m
+    3  sh abc.sh
+    4  rm -rf *
+    5  vim abc.yml
+    6  kubectl create -f abc.yml
+    7  kubectl get rs
+    8  kubectl edit rs/movies
+    9  kubectl delete -f abc.yml
+   10  vim abc.yml
+   11  kubectl create -f abc.yml
+   12  kubectl edit rs/movies
+   13  kubectl describe po
+   14  kubectl describe po  | grep -i image
+   15  kubectl edit rs/movies
+   16  kubectl describe po  | grep -i image
+   17  kubectl edit rs/movies
+   18  kubectl delete rs movies
+   19  vim abc.yml
+   20  kubectl create -f abc.yml
+   21  kubectl get deploy
+   22  kubectl get rs
+   23  kubectl get po
+   24  kubectl describe po  | grep -i image
+   25  kubectl edit deploy/movies
+   26  kubectl describe po  | grep -i image
+   27  kubectl rollback deploy/movies
+   28  kubectl deploy --help
+   29  kubectl deploy -h
+   30  kubectl rollback -h
+   31  kubectl rollout history deploy/movies
+   32  kubectl rollout undo deploy/movies
+   33  kubectl describe po  | grep -i image
+   34  kubectl rollout history deploy/movies
+   35  kubectl get deploy
+   36  kubectl get deploy -o wide
+   37  kubectl get deploy --show-labels
+   38  kubectl get po
+   39  kubectl delete pod movies-5489ddc6cc-248cw
+   40  kubectl get po
+   41  kubectl scale deploy/movies --replicas=10
+   42  kubectl get po
+   43  kubectl scale deploy/movies --replicas=5
+   44  kubectl get po
+   45  kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+   46  minikube addons enable metrics-server (only for minikube)
+   47  minikube addons enable metrics-server
+   48  kubectl top po
+   49  kubectl top pods
+   50  kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+   51  minikube addons
+   52  minikube addons enable metrics-server
+   53  kubectl get po
+   54  kubectl top po
+   55  kubectl scale deploy/movies --replicas=10
+   56  kubectl get po
+   57  kubectl scale deploy/movies --replicas=5
+   58  cat abc.yml
+   59  kubectl get po --all
+   60  kubectl get po -A
+   61  kubectl top po
+   62  kubectl top po -A
+   63  wget https://github.com/hidetatz/kubecolor/releases/download/v0.0.25/kubecolor_0.0.25_Linux_x86_64.tar.gz
+   64  tar -zxvf kubecolor_0.0.25_Linux_x86_64.tar.gz
+   65  ./kubecolor
+   66  chmod +x kubecolor
+   67  mv kubecolor /usr/local/bin/
+   68  kubecolor get po
+   69  kubecolor get rs
+   70  kubecolor get deploy
+   71  kubecolor get po -A
+   72  kubectl get po
+   73  kubecolor get po
+   74  kubecolor get ns
+   75  kubecolor get all
+   76  kubecolor describe deploy movies
+   77  kubecolor get po -n kube-system
+   78  kubecolor get po
+   79  kubecolor get ns
+   80  kubecolor get po -n kube-node-lease
+   81  kubecolor get po -n kube-public
+   82  kubecolor get po -n kube-system
+   83  kubecolor get po -A
+   84  kubecolor get po --all-namespaces
+   85  kubectl api-resources
+   86  kubectl api-resources | grep -i rs
+   87  kubectl api-resources | grep -i pods
+   88  kubectl api-resources | grep -i deployment
+   89  kubectl api-resources | grep -i namespace
+   90  kubecolor create ns dev
+   91  kubecolor run dev1 --image nginx
+   92  kubecolor run dev2 --image nginx
+   93  kubecolor run dev3 --image nginx
+   94  kubecolor get po
+   95  kubecolor delete --all
+   96  kubecolor delete po --all
+   97  kubecolor delete deploy --all
+   98  kubecolor config set-context --current --namespace=dev
+   99  kubecolor config view
+  100  kubecolor config view --minify
+  101  kubecolor config view | grep -i namespace
+  102  kubecolor run dev3 --image nginx
+  103  kubecolor run dev2 --image nginx
+  104  kubecolor run dev1 --image nginx
+  105  kubecolor get po
+  106  kubecolor config set-context --current --namespace=default
+  107  kubecolor get po
+  108  kubecolor get po -n dev
+  109  kubecolor dev po dev1 -n dev
+  110  kubecolor delete po dev1 -n dev
+  111  kubecolor get ns
+  112  kubecolor delete ns dev
