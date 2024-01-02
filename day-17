@@ -313,8 +313,18 @@ these 5 minutes is called as cooldown period
    87  kubectl get autoscale
    88  kubectl edit deploy swiggy-deploy
    89  kubectl get po
-   90  kubectl exec -it swiggy-deploy-74bf8bf7f7-9789s -- /bin/bash
+   90  kubectl exec -it swiggy-deploy-74bf8bf7f7-9789s -- /bin/bash *********
    91  kubectl get po
    92  history
 
+  1  yum install stress -y**********
+    2  stress*********
+    3  uname -a
+    4  cat /etc/os-release
+    5  apt install stress -y
+    6  stress
+    7  stress --cpu 8 --io 4 --vm 2 --vm-bytes 128M --timeout 30s**********
+    8  stress
+    9  stress --cpu 8 --io 4 --vm 2 --vm-bytes 128M --timeout 30s
+   10  history
 
