@@ -1,0 +1,300 @@
+SERVICES:
+
+SERVICE: It is used to expose the application in k8s.
+
+TYPES:
+1. CLUSTERIP: It will work inside the cluster.
+it will not expose to outer world.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: swiggy
+  name: swiggy-deploy
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: swiggy
+  template:
+    metadata:
+      labels:
+        app: swiggy
+    spec:
+      containers:
+      - name: cont1
+        image: rahamshaik/moviespaytm:latest
+        ports:
+          - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sv1
+spec:
+  type: ClusterIP
+  selector:
+    app: swiggy
+  ports:
+    - port: 80
+
+DRAWBACK:
+We cannot use app outside.
+
+2. NODEPORT: It will expose our application in a particular port.
+Range: 30000 - 32767 (in sg we need to give all traffic)
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: swiggy
+  name: swiggy-deploy
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: swiggy
+  template:
+    metadata:
+      labels:
+        app: swiggy
+    spec:
+      containers:
+      - name: cont1
+        image: rahamshaik/trainservice:latest
+        ports:
+          - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: abc
+spec:
+  type: NodePort
+  selector:
+    app: swiggy
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 31111
+
+NOTE: UPDATE THE SG (REMOVE OLD TRAFFIC AND GIVE ALL TRAFFIC & SSH)
+DRAWBACK:
+PORT RESTRICTION.
+
+3. LOADBALACER: It will expose our app and distribute load blw pods.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: swiggy
+  name: swiggy-deploy
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: swiggy
+  template:
+    metadata:
+      labels:
+        app: swiggy
+    spec:
+      containers:
+      - name: cont1
+        image: rahamshaik/trainservice:latest
+        ports:
+          - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: abc
+spec:
+  type: LoadBalancer
+  selector:
+    app: swiggy
+  ports:
+    - port: 80
+      targetPort: 80
+
+
+
+AUTO SCALING:
+In Kubernetes, a HorizontalPodAutoscaler automatically updates a workload resource (such as a Deployment or ReplicaSet), with the aim of automatically scaling the workload to match demand.
+Vertical means Existing
+Horizontal means New
+
+Example : if you have pod-1 with 40% load and pod2 with 40% load then average will be (40+40/2=40) average value is 40
+but if pod-1 is exceeding 50% and pod-2 40% then average will be 45% (then here we need to create a pod-3 becaue its exceeding the average)
+
+Here we need to use metric server whose work is to collect the metrics (cpu & mem info)
+metrics server is connected to the HPA and give information to HPA 
+Now HPA will analysis metrics for every 30 sec and create a new pod if needed.
+
+
+COOLING PERIOD:
+
+
+scaling can be done only for scalabel objects (ex: RS, Deployment, RC )
+HPA is implemented as a K8S API Resources and a controller.
+Controller Periodically adjust the number of replicas in RS, RC and Deployment depends on average.
+
+HPA:
+
+
+For resource metrics (like CPU) the Controller fetches the metrics from the resource metrics All for each pod targeted by the HPA.
+
+Then if a target utilization Value is Set, the Controller calculates the Utilization value as a percentage of the Equivalent resource request on the Containers in each pod.
+
+If a target raw value is set, raw metric values are used direct! then The Controler takes the average of utilization.
+
+The cooldown period to wait before another downscale Operation Can be performed is controlled by
+- horizontal -pod-autoscaler-downtime- stabilization flag (Default value is 5 Min)
+
+--kubelete-insecure-tls
+
+kubectl autoscale deployment mydeploy --cpu-percent=20 --min=1 --max=10
+
+
+copy the content on componets.yml on my local
+edit line number: 137 --- > - --kubelete-insecure-tls
+
+kubectl apply -f file
+
+(or)
+
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.6.2/components.yaml
+
+
+kubectl get ns
+kubectl get po -n kube-system
+now you will see the metrics server
+kubectl get logs -f metrics-server-7fcb88f75-lm7hp -n kube-system
+
+
+vim hpa.yml
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+   name: raham
+spec:
+   replicas: 1
+   selector:
+    matchLabels:
+     name: app
+   template:
+     metadata:
+       name: testpod8
+       labels:
+         name: app
+     spec:
+      containers:
+        - name: c00
+          image: httpd
+          ports:
+          - containerPort: 80
+          resources:
+            limits:
+              cpu: 500m
+            requests:
+              cpu: 200m
+
+kubectl apply -f hpa.yml
+kubectl get all
+kubectl get deploy 
+kubectl autoscale deployment raham --cpu-percent=20 --min=1 --max=10
+kubectl get al1
+
+now opne second terminal 
+kubectl get po
+kubectl exec mydeploy-6bd88977d5-7s6t8 -it -- /bin/bash
+
+go to terminal one 
+kubectl get all : it will observer for every 2 seconds
+
+now opne second terminal
+apt update -y
+apt upgrade -y
+
+
+Now it will create extra pods in the terminal one
+
+now if the load gets down then after 5 minutes all the pods will go
+these 5 minutes is called as cooldown period 
+
+
+
+  history:
+  oot@ip-172-31-47-225 ~]# history
+    1  vim kops.sh
+    2  vim .bashrc
+    3  sh kops.sh
+    4  source .bashrc
+    5  sh kops.sh
+    6  kops validate cluster --wait 10m
+    7  cat kops.sh
+    8  kops validate cluster --wait 10m
+    9  export KOPS_STATE_STORE=s3://cloudanddevopsbyraham8899007.k8s.local
+   10  kops validate cluster --wait 10m
+   11  kubectl get svc
+   12  vim abc.yml
+   13  kubectl create -f abc.yml
+   14  kubectl get svc,deploy
+   15  kubectl delete -f abc.yml
+   16  vim abc.yml
+   17  kubectl create -f abc.yml
+   18  kubectl get svc,deploy
+   19  kubectl get po -o wide
+   20  kubectl delete -f abc.yml
+   21  vim abc.yml
+   22  kubectl create -f abc.yml
+   23  kubectl get svc,deploy
+   24  vim abc.yml
+   25  kubectl apply -f abc.yml
+   26  kubectl get svc,deploy
+   27  kubectl delete -f abc.yml
+   28  vim abc.yml
+   29  kubectl create -f abc.yml
+   30  kubectl get svc,deploy
+   31  kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+   32  minikube addons enable metrics-server #(only for minikube)
+   33  kubectl top nodes
+   34  kubectl top pods
+   35  kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+   36  kubectl top po
+   37  kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/high-availability-1.21+.yaml
+   38*
+   39  kubectl top po
+   40  kubectl top NO
+   41  kubectl top no
+   42  vim abc.yml
+   43  cat abc.yml
+   44  kubectl create -f abc.yml
+   45  vim abc.yml
+   46  kubectl create -f abc.yml
+   47  vim abc.yml
+   48  kubectl create -f abc.yml
+   49  vim abc.yml
+   50  cat abc.yml
+   51  vim  abc.yml
+   52  kubectl create -f abc.yml
+   53  cat r
+   54  cat abc.yml
+   55  vim abc.yml
+   56  kubectl create -f abc.yml
+   57  vim abc.yml
+   58  kubectl create -f abc.yml
+   59  kubectl get po
+   60  kubectl get deploy
+   61  kubectl delete deploy swiggy-deploy
+   62  kubectl get deploy
+   63  kubectl autoscale deployment mydeploy --cpu-percent=20 --min=1 --max=10
+   64  kubectl get po
+   65  kubectl exec -it mydeploy-c5d4f9cbb-flsgk -- /bin/bash
+   66  kubectl get po
+   67  history
+
