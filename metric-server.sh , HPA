@@ -1,0 +1,32 @@
+FOR MINIKUBE:
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+minikube addons enable metrics-server #(only for minikube)
+
+FOR KOPS:
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/high-availability-1.21+.yaml
+
+kubectl top nodes
+kubectl top pods
+kubectl get po --watch (THIS WILL MONITOR ALL POD ACTIVITIES)
+
+
+
+HORIZONTAL POD AUTOSCALLING:  HPA
+
+TO SET MIN AND MAX POD LEVELS:
+
+kubectl autoscale deploy deployment_name --cpu-percent=20 --min=5 --max=10
+
+STRESS ON PODS:
+
+ kubectl exec -it pod_name -- /bin/bash (this will execute command by going inside of pod)
+ 
+ if image OS is UBUNTU
+ for stress: apt install stress -y
+ run the last command to increase stress on pod
+ cmnd: stress
+
+ if image OS is linux
+ cmnd: amazon-linux-extras install epel -y
+ cmnd: yum install stress -y
