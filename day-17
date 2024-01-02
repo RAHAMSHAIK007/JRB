@@ -211,7 +211,7 @@ kubectl get al1
 
 now opne second terminal 
 kubectl get po
-kubectl exec mydeploy-6bd88977d5-7s6t8 -it -- /bin/bash
+kubectl exec pod_name_id -it -- /bin/bash (this will not take you inside )
 
 go to terminal one 
 kubectl get all : it will observer for every 2 seconds
@@ -297,4 +297,24 @@ these 5 minutes is called as cooldown period
    65  kubectl exec -it mydeploy-c5d4f9cbb-flsgk -- /bin/bash
    66  kubectl get po
    67  history
+
+   75  kubectl autoscale deploy swiggy-deploy --cpu-percent=20 --min=1 --max=10
+   76  yum install stress -y
+   77  amazon-linux-extras install epel -y
+   78  yum install stress -y
+   79  kubectl get po
+   80  kubectl autoscale deploy swiggy-deploy --cpu-percent=20 --min=5 --max=10
+   81  kubectl get po
+   82  kubectl delete -f abc.yml
+   83  kubectl create -f abc.yml
+   84  kubectl get svc
+   85  kubectl get deploy
+   86  kubectl autoscale deploy swiggy-deploy --cpu-percent=20 --min=5 --max=10
+   87  kubectl get autoscale
+   88  kubectl edit deploy swiggy-deploy
+   89  kubectl get po
+   90  kubectl exec -it swiggy-deploy-74bf8bf7f7-9789s -- /bin/bash
+   91  kubectl get po
+   92  history
+
 
