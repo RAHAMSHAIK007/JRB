@@ -1,0 +1,178 @@
+ENV VARIABLES:
+
+It is a way to pass configuration information to containers running within pods. 
+To set Env   vars it include the env or envFrom field in the configuration file.
+
+ENV: DIRECTLY PASSING
+ENVFROM: PASSING FROM FILE
+
+ENV:
+allows you to set environment variables for a container, specifying a value directly for each variable that you name.
+
+ENVFROM:
+allows you to set environment variables for a container by referencing either a ConfigMap or a Secret. 
+When you use envFrom, all the key-value pairs in the referenced ConfigMap or Secret are set as environment variables for the container. 
+You can also specify a common prefix string
+
+CONFIGMAPS:
+
+It is used to store the data in key-value pair, files, or command-line arguments that can be used by pods, containers and other resources in cluster
+But the data should be non confidential data ()
+But it does not provider security and encryption.
+If we want to provide encryption use secrets in kubernetes.
+Limit of config map data in only 1 MB (we cannot store more than that)
+But if we want to store a large amount of data in config maps we have to mount a volume or use a seperate database or file service.
+
+
+USE CASES:
+Configure application setting
+Configuring a pod or container
+Sharing configuration data across multiple resources
+We can store the data: By using this config maps, we can store the data like IP address, URL's and DNS etc...
+
+kubectl create deploy swiggydb --image=mariadb
+kubectl get pods
+kubectl logs swiggydb-5d49dc56-cbbqk
+
+It is crashed why because we havent specified the password for it
+
+
+kubectl set env deploy swiggydb MYSQL_ROOT_PASSWORD=Raham123 
+kubectl get pods
+now it will be on running state
+kubectl delete deploy swiggydb
+
+PASSING FROM VAR FILE:
+kubectl create deploy swiggydb --image=mariadb
+kubectl get pods
+kubectl logs swiggydb-5d49dc56-cbbqk
+
+
+MYSQL_ROOT_PASSWORD=Raham123
+MYSQL_USER=admin
+
+kubectl create cm dbvars --from-env-file=varsfile
+kubectl describe cm dbvars
+
+
+kubectl get deploy 
+kubectl delete deploy swiggydb
+kubectl create deploy swiggydb --image=mariadb 
+kubectl get pods
+
+kubectl get cm
+kubectl set env deploy swiggydb --from=configmap/dbvars
+kubectl get pods
+
+SECRETS: To store sensitive data in an unencrypted format like passwords, ssh-keys etc ---
+it uses base64 encoded format
+password=raham (now we can encode and ecode the value)
+
+WHY: if i dont want to expose the sensitive info so we use SECRETS
+By default k8s will create some Secrets these are useful from me to create communicate inside the cluster
+used to communicate with one resoure to another in cluster
+These are system created secrets, we need not to delete
+
+TYPES:
+Generic: creates secrets from files, dir, literal (direct values)
+TLS: Keys and certs
+Docker Registry: used to get private images by using the password
+
+kubectl create deploy swiggydb --image=mariadb
+kubectl get po 
+kubectl create secret generic password --from-literal=ROOT_PASSWORD=raham123
+kubectl get secrets
+kubectl describe secret password
+kubectl set env deploy swiggydb --from=secrets/password
+kubectl get po 
+kubectl set env deploy newdb --from=secret/password --prefix=MYSQL_
+
+without passing prefix we cant make the pod running status
+
+TO SEE SECRETS:
+kubectl get secrets password -o yaml
+echo -n "cmFoYW0xMjM" | base64 -d
+echo -n "cmFoYW0xMjM" | base64 --decode
+
+HISTORY:
+ 1  vim minikube.sh
+    2  sh minikube.sh
+    3  kubectl create deploy swiggydb --image=mariadb
+    4  kubectl get po
+    5  kubectl log swiggydb-845cddf7b9-mvxs5
+    6  kubectl logs swiggydb-845cddf7b9-mvxs5
+    7  kubectl get po
+    8  kubectl set env deploy swiggydb MYSQL_ROOT_PASSWORD=Raham123
+    9  kubectl get po
+   10  kubectl delete deploy swiggydb
+   11  kubectl create deploy swiggydb --image=mariadb
+   12  kubectl get po
+   13  kubectl logs swiggydb-845cddf7b9-xsql9
+   14  vim varsfile
+   15  kubectl set env swiggydb --from-env-file=varsfile
+   16  kubectl set env deploy swiggydb --from-env-file=varsfile
+   17  kubectl set env deploy swiggydb --env-from=varsfile
+   18  kubectl set env --help
+   19  ll
+   20  cat varsfile
+   21  ls
+   22  cat varsfile
+   23  kubectl create cm dbvars --from-env-file=varsfile
+   24  kubectl get cm
+   25  kubectl set env deploy swiggydb --from=configmap/dbvars
+   26  kubectl get po
+   27  kubectl describe cm dbvars
+   28  kubectl delete --all
+   29  kubectl delete po --all
+   30  kubectl delete deploy --all
+   31  kubectl delete cm --all
+   32  kubectl create deploy swiggydb --image=mariadb
+   33  kubectl get po
+   34  kubectl set env deploy swiggydb MYSQL_ROOT_PASSWORD=raham123
+   35  kubectl get po
+   36  kubectl delete deploy swiggydb
+   37  kubectl create deploy swiggydb --image=mariadb
+   38  kubectl get po
+   39  vim raham
+   40  kubectl create cm dbvars --from-env-file=raham
+   41  kubectl get cm
+   42  kubectl describe cm dbvars
+   43  kubectl set env deploy swiggydb --from=configmap/dbvars
+   44  kubectl get po
+   45  echo "raham" | base64 --encode
+   46  echo "raham" | base64 --decode
+   47  kubectl get secrets
+   48  kubectl get secrets -A
+   49  kubectl get secret
+   50  kubectl get secret -A
+   51  kubectl delete deploy --all
+   52  kubectl delete cm  --all
+   53  kubectl create deploy swiggydb --image=mariadb
+   54  kubectl get po
+   55  kubectl create secret generic password --from-literal=ROOT_PASSWORD=raham123
+   56  kubectl get secrets
+   57  kubectl describe secret password
+   58  kubectl set env deploy swiggydb --from=secrets/password
+   59  kubectl get po
+   60  kubectl describe secret password
+   61  kubectl edit deploy/swiggydb
+   62  kubectl get po
+   63  kubectl logs swiggydb-84dfb56dff-clv97
+   64  kubectl describe pod swiggydb-84dfb56dff-clv97
+   65  kubectl set env deploy newdb --from=secret/password --prefix=MYSQL_
+   66  kubectl set env deploy swiggydb --from=secret/password --prefix=MYSQL_
+   67  kubectl get po
+   68  kubectl set secrets
+   69  kubectl set secret
+   70  kubectl get secret
+   71  kubectl describe secret password
+   72  kubectl get secrets password -o yaml
+   73  echo -n "cmFoYW0xMjM" | base64 -d
+   74  echo -n "cmFoYW0xMjM" | base64 --decode
+   75  kubectl create secret generic abc --from-literals=color=blue
+   76  kubectl create secret generic abc --from-literal=color=blue
+   77  kubectl get secret
+   78  kubectl describe secret abc
+   79  kubectl get secrets abc -o yaml
+   80  echo -n "Ymx1ZQ" | base64 -d
+   81  history
