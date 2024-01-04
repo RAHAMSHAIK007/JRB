@@ -1,0 +1,80 @@
+pv:
+
+Persistent means always available.
+PVs are independent they can exist even if no pod is using them.
+it is created by administrator or dynamically created by a storage class. 
+Once a PV is created, it can be bound to a Persistent Volume Claim (PVC), which is a request for storage by a pod.
+When a pod requests storage via a PVC, K8S will search for a suitable PV to satisfy the request. 
+PV is bound to the PVC and the pod can use the storage. 
+If no suitable PV is found, K8S will either dynamically create a new one (if the storage class supports dynamic provisioning) or the PVC will remain unbound.
+
+pvc:
+
+To use Pv we need to claim the volume using PVC.
+PVC request a PV with your desired specification (size, access, modes & speed etc) from k8s and onec a suitable PV is found it will bound to PVC
+After bounding is done to pod you can mount it as a volume.
+once userfinised iyts work the attached PV can be released the underlying PV can be reclaimed & recycled for future.
+
+RESTRICTIONS:
+1. Instances must be on same az as the ebs 
+2. EBS supports only a sinlge EC2 instance mounting
+
+pv.yml
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: my-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  awsElasticBlockStore:
+    volumeID: vol-07e5c6c3fe273239f
+    fsType: ext4
+
+pvc.yml
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+dep.yml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pvdeploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+     app: swiggy
+  template:
+    metadata:
+      labels:
+        app: swiggy
+    spec:
+      containers:
+      - name: raham
+        image: centos
+        command: ["bin/bash", "-c", "sleep 10000"]
+        volumeMounts:
+        - name: my-pv
+          mountPath: "/tmp/persistent"
+      volumes:
+        - name: my-pv
+          persistentVolumeClaim:
+            claimName: my-pvc
+=====================================================
+
+
+              
