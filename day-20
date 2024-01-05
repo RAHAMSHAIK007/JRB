@@ -1,0 +1,133 @@
+INFRASTRUCTURE:
+resources used to run our application on cloud.
+ex: ec2, s3, elb, vpc --------------
+
+
+in genral we used to deploy infra on manual 
+
+Manual:
+1. time consume
+2. Manual work
+3. committing mistakes
+
+Automate -- > Terraform -- > code -- > hcl (Hashicorp configuration languge)
+
+
+
+its a tool used to make infrastructure automation.
+its a free and open source.
+its platform independent.
+it comes on the year 2014.
+who: mitchel Hashimoto 
+ownde: hasicorp 
+terraform is written on the go language.
+We can call terraform as IAAC TOOL.
+
+HOW IT WORKS:
+terraform uses code to automate the infra.
+we use HCL : HashiCorp Configuration Language.
+
+IAAC: Infrastructure as a code.
+
+Code --- > execute --- > Infra 
+
+ADVANTAGES:
+1. Reusable 
+2. Time saving
+3. Automation
+4. Avoiding mistakes
+5. Dry run
+
+
+CFT = AWS
+ARM = AZURE
+GDE = GOOGLE
+
+TERRAFROM = ALL CLOUDS
+
+Terraform can be used for on-premises infrastructure. 
+Whilst Terraform is known for being cloud-agnostic and supporting public clouds such as AWS, Azure, GCP, it can also be used for on-prem infrastructure including VMware vSphere and OpenStack.
+
+INSTALLING TERRAFORM:
+
+sudo yum install -y yum-utils shadow-utils
+sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
+sudo yum -y install terraform
+aws configure
+
+Configuration files:
+it will have resource configuration.
+extension is .tf 
+
+mkdir terraform
+cd terraform
+
+
+
+
+TERRAFORM COMMANDS:
+terraform init	: initalize the provider plugins on backend
+it will store information of plugins in .terrafrom folder
+
+terraform plan	: to create an execution plan
+it will take inputs given by users and plan the resource creation
+if we haven't given inputs for few feilds it will take default values.
+
+
+terrafrom apply : to create resources
+as per the given inputs on configuration file it will create the resources in real word.
+
+
+terrafrom destroy : to delete resources
+
+
+provider "aws" {
+region = "ap-south-1"
+}
+
+resource "aws_instance" "one" {
+count = 5
+ami = "ami-0b41f7055516b991a"
+instance_type = "t2.micro"
+}
+
+terraform apply --auto-approve
+terraform destroy --auto-approve
+
+
+STATE FILE: used to store the resource information which is created by terraform
+to track the resource activities
+in real time entire resource info is on state file.
+we need to keep it safe & Secure
+if we lost this file we cant track the infra.
+Command:
+terraform state list
+
+terrafrom target: used to destroy the specific resource 
+terraform state list
+single target: terraform destroy --auto-approve -target="aws_instance.one[3]"
+multi targets: terraform destroy --auto-approve -target="aws_instance.one[1]" -target="aws_instance.one[2]"
+
+HISTORY:
+ 1  aws configure
+    2  mkdir terraform
+    3  cd terraform/
+    4  vim main.tf
+    5  cd
+    6  sudo yum install -y yum-utils shadow-utils
+    7  sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
+    8  sudo yum -y install terraform
+    9  cd terraform/
+   10  terraform apply --auto-approve
+   11  terraform init
+   12  terraform apply --auto-approve
+   13  ll
+   14  terraform state list
+   15  cat terraform.tfstate
+   16  terraform state list
+   17  terraform destroy --auto-approve -target="aws_instance.one[0]" -target="aws_instance.one[4]"
+   18  terraform state list
+   19  terraform destroy --auto-approve
+   20  terraform state list
+   21  cat terraform.tfstate
+   22  history
