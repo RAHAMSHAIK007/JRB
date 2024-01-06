@@ -1,0 +1,224 @@
+TERRAFORM VAR FILES:
+these files used to store variables seperately on terraform.
+if values havent declared on main.tf terraform will search for variable.tf and takes values from that file.
+
+cat main.tf 
+provider "aws" {
+  region = "us-east-1"
+}
+
+resource "aws_instance" "one" {
+  count         = var.instance_count
+  ami           = var.ami_id
+  instance_type = var.instance_type
+  tags = {
+    Name = var.instance_name
+  }
+}
+
+cat variable.tf
+
+variable "instance_count" {
+  description = "*"
+  type        = number
+  default     = 3
+}
+
+variable "ami_id" {
+  type    = string
+  default = "ami-079db87dc4c10ac91"
+}
+
+variable "instance_type" {
+  type    = string
+  default = "t2.micro"
+}
+
+variable "instance_name" {
+  type    = string
+  default = "dev-server"
+}
+
+TERRAFORM REFRESH:
+it will store the values when compared with real world infrastructure when we modified the terraform values in real world infrastructure it does not replicate to state file so we need to run the command called Terraform Refresh it will refresh the state file while refreshing state file it will compare original values with the state file values if the original values are modified or change it it will be replicated to state file after running terraform refresh command.
+
+
+TERRAFORM TFVARS:
+
+
+cat main.tf
+provider "aws" {
+  region = "us-east-1"
+}
+
+resource "aws_instance" "one" {
+  count         = var.instance_count
+  ami           = var.ami_id
+  instance_type = var.instance_type
+  tags = {
+    Name = var.instance_name
+  }
+}
+
+cat variable.tf
+variable "instance_count" {
+}
+
+variable "ami_id" {
+}
+
+variable "instance_type" {
+}
+
+variable "instance_name" {
+}
+
+cat dev.tfvar
+
+instance_count = 1
+
+ami_id = "ami-036c2987dfef867fb"
+
+instance_type = "t2.micro"
+
+instance_name = "dev-server"
+
+cat test.tfvar
+
+instance_count = 2
+
+ami_id = "ami-0c7217cdde317cfec"
+
+instance_type = "t2.medium"
+
+instance_name = "test-server"
+
+terraform apply --auto-approve -var-file="test.tfvar"
+terraform apply --auto-approve -var-file="dev.tfvar"
+
+Note: In the above example first we created the testing infrastructure and later we created developing infrastructure 
+but when developing infrastructure is created testing infrastructure had deleted.
+The main reason is both of the values you are passing from single workspace.
+when we work on single workspace previous values are going to be overrided and new values are going to be added for the current working infrastructure.
+For this purpose in real time if you want to create multiple environments we use terraform workspace concept. 
+
+
+WORKSPACES:
+it is used to create infra for multiple env 
+it will isolate each env
+if we work on dev env it wont affect test env
+the default workspace is default 
+all the resource we create on terraform by default will store on default workspace
+
+terraform workspace list	: to list the workspaces
+terraform workspace new dev	: to create workspace
+terraform workspace show	: to show current workspace
+terraform workspace select dev	: to switch to dev workspace
+terraform workspace delete dev	: to delete dev workspace
+
+
+NOTE:
+1. we need to empty the workspace befor delete
+2. we cant delete current workspace, we can switch and delete
+3. we cant delete default workspace
+
+
+TERRAFORM OUTPUTS:
+this is block used to print particular resource infromation.
+when we create a resource the information will be stored on state file.
+this output block will get required values from state file when it create resource.
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+resource "aws_instance" "one" {
+  count         = var.instance_count
+  ami           = var.ami_id
+  instance_type = var.instance_type
+  tags = {
+    Name = var.instance_name
+  }
+}
+
+output "raham" {
+value = [aws_instance.one[0].public_ip, aws_instance.one[0].private_ip, aws_instance.one[0].public_dns]
+}
+
+HISTORY:
+   23  cd terraform/
+   24  vim main.tf
+   25  vim variable.tf
+   26  terraform plan
+   27  terraform validate
+   28  vi main.tf
+   29  vim variable.tf
+   30  cat main.tf
+   31  cat variable.tf
+   32  terraform fmt
+   33  cat main.tf
+   34  cat variable.tf
+   35  terraform plan
+   36  terraform apply --auto-approve
+   37  vim variable.tf
+   38  terraform apply --auto-approve
+   39  cat main.tf variable.tf
+   40  terraform state list
+   41  terraform refresh
+   42  terraform state list
+   43  ll
+   44  terraform state list
+   45  terraform refresh
+   46  terraform state list
+   47  ll
+   48  cat terraform.tfstate
+   49  terraform refresh
+   50  cat terraform.tfstate
+   51  terraform destroy --auto-approve
+   52  vim variable.tf
+   53  vim dev.tfvars
+   54  mv dev.tfvars dev.tfvar
+   55  vim test.tfvar
+   56  cat main.tf
+   57  cat variable.tf
+   58  cat dev.tfvar
+   59  cat test.tfvar
+   60  terraform apply --auto-approve -var-file="test.tfvar"
+   61  terraform apply --auto-approve -var-file="dev.tfvar"
+   62  terraform workspace list
+   63  terraform state list
+   64  terraform destroy --auto-approve
+   65  cat main.tf
+   66  terraform destroy --auto-approve
+   67  terraform workspace list
+   68  terraform workspace new dev
+   69  terraform workspace show
+   70  terraform apply --auto-approve -var-file="dev.tfvar"
+   71  ll
+   72  terraform state list
+   73  cat terraform.tfstate
+   74  cat terraform.tfstate.backup
+   75  terraform workspace new test
+   76  ll
+   77  terraform apply --auto-approve -var-file="tes.tfvar"
+   78  terraform apply --auto-approve -var-file="test.tfvar"
+   79  terraform workspace list
+   80  terraform workspace show
+   81  terraform workspace delete test
+   82  terraform workspace select dev
+   83  terraform workspace delete test
+   84  terraform workspace select test
+   85  terraform destroy --auto-approve -var-file="test.tfvar"
+   86  terraform workspace select dev
+   87  terraform workspace delete test
+   88  terraform destroy --auto-approve -var-file="dev.tfvar"
+   89  terraform workspace select default
+   90  terraform workspace delete dev
+   91  terraform workspace list
+   92  vim main.tf
+   93  terraform apply --auto-approve -var-file="dev.tfvar"
+   94  vim main.tf
+   95  terraform apply --auto-approve -var-file="dev.tfvar"
+   96  cat main.tf
+   97  terraform destroy --auto-approve -var-file="dev.tfvar"
+   98  history
