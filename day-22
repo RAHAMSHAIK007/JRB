@@ -1,0 +1,314 @@
+TERRAFORM LOCALS: its a block used to define values
+once you define a value on this block you can use them multiple times
+changing the value in local block will be replicated to all resources.
+simply define value once and use for mutiple times.
+
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+
+locals {
+env = "${terraform.workspace}"
+}
+
+resource "aws_vpc" "one" {
+cidr_block = "10.0.0.0/16"
+tags = {
+Name = "${local.env}-vpc"
+}
+}
+
+resource "aws_subnet" "two" {
+vpc_id = aws_vpc.one.id
+cidr_block = "10.0.0.0/24"
+tags = {
+Name = "${local.env}-subnet"
+}
+}
+
+resource "aws_instance" "three" {
+  subnet_id = aws_subnet.two.id
+  ami           = "ami-079db87dc4c10ac91"
+  instance_type = "t2.micro"
+  tags = {
+    Name = "${local.env}-server"
+  }
+}
+
+
+s3 Backend setup: 
+it will store terraform statefile in bucket.
+when we modify the infra it will update the statefile in bucket.
+
+why: state file is very imp in terraform
+without state file we cant track the infra
+if you lost it we cant manage the infra
+
+backup file is a backup of the terraform. tfstate file. Terraform automatically creates a backup of the state file before making any changes to the state file. This ensures that you can recover from a corrupted or lost state file.
+
+
+CODE:
+provider "aws" {
+  region = "us-east-1"
+}
+
+terraform {
+  backend "s3" {
+    bucket = "swiggyterraformbucket001"
+    key    = "terraform.tfstate"
+    region = "us-east-1"
+  }
+}
+
+locals {
+env = "${terraform.workspace}"
+}
+
+resource "aws_vpc" "one" {
+cidr_block = "10.0.0.0/16"
+tags = {
+Name = "${local.env}-vpc"
+}
+}
+
+resource "aws_subnet" "two" {
+vpc_id = aws_vpc.one.id
+cidr_block = "10.0.0.0/24"
+tags = {
+Name = "${local.env}-subnet"
+}
+}
+
+resource "aws_instance" "three" {
+  subnet_id = aws_subnet.two.id
+  ami           = "ami-079db87dc4c10ac91"
+  instance_type = "t2.micro"
+  tags = {
+    Name = "${local.env}-server"
+  }
+}
+
+
+TERRAFORM TAINT & UNTAINT: 
+it is used to recreate specific resources in infrastructure.
+Why: 
+if i have an ec2 -- > crashed
+ec2 -- > code -- > main.tf 
+now to recreate this ec2 seperately we need to taint the resource
+
+terraform state list
+terraform taint aws_instance.three
+terraform apply --auto-approve
+
+TO TAINT: terraform taint aws_instance.three
+TO UNTAINT: terraform untainted aws_instance.three
+
+
+
+META ARGUMENTS:
+
+PREVENT DESTROY:
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+
+locals {
+  env = terraform.workspace
+}
+
+resource "aws_vpc" "one" {
+  cidr_block = "10.0.0.0/16"
+  tags = {
+    Name = "${local.env}-vpc"
+  }
+}
+
+resource "aws_subnet" "two" {
+  vpc_id     = aws_vpc.one.id
+  cidr_block = "10.0.0.0/24"
+  tags = {
+    Name = "${local.env}-subnet"
+  }
+}
+
+resource "aws_instance" "three" {
+  subnet_id     = aws_subnet.two.id
+  ami           = "ami-079db87dc4c10ac91"
+  instance_type = "t2.micro"
+  tags = {
+    Name = "${local.env}-server"
+  }
+  lifecycle {
+    prevent_destroy = false
+  }
+}
+
+
+IGNORE CHANGES:
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+
+locals {
+  env = terraform.workspace
+}
+
+resource "aws_vpc" "one" {
+  cidr_block = "10.0.0.0/16"
+  tags = {
+    Name = "${local.env}-vpc"
+  }
+}
+
+resource "aws_subnet" "two" {
+  vpc_id     = aws_vpc.one.id
+  cidr_block = "10.0.0.0/24"
+  tags = {
+    Name = "${local.env}-subnet"
+  }
+}
+
+resource "aws_instance" "three" {
+  subnet_id     = aws_subnet.two.id
+  ami           = "ami-079db87dc4c10ac91"
+  instance_type = "t2.micro"
+  tags = {
+    Name = "${local.env}-server"
+  }
+  lifecycle {
+    ignore_changes = [
+      tags,
+    ]
+  }
+}
+
+
+DEPENDS ON:
+provider "aws" {
+  region = "us-east-1"
+}
+
+
+locals {
+  env = terraform.workspace
+}
+
+
+
+resource "aws_instance" "three" {
+  ami           = "ami-079db87dc4c10ac91"
+  instance_type = "t2.micro"
+  tags = {
+    Name = "${local.env}-server"
+  }
+    depends_on = [
+      aws_vpc.one
+    ]
+}
+
+HISTORY:
+  102  rm -rf test.tfvar dev.tfvar variable.tf
+  103  vim main.tf
+  104  terraform init
+  105  vim main.tf
+  106  terraform init
+  107  vim main.tf
+  108  terraform init
+  109  terraform plan
+  110  terraform apply --auto-approve
+  111  vim main.tf
+  112  terraform apply --auto-approve
+  113  vim main.tf
+  114  terraform apply --auto-approve
+  115  terraform workspace new test
+  116  vim main.tf
+  117  terraform apply --auto-approve
+  118  terraform workspace new prod
+  119  terraform apply --auto-approve
+  120  terraform workspace select test
+  121  terraform destroy --auto-approve
+  122  terraform workspace select default
+  123  terraform workspace delete prod
+  124  terraform workspace delete test
+  125  terraform state list
+  126  terraform graph
+  127  cat main.tf
+  128  terraform destroy --auto-approve
+  129  vim main.tf
+  130  terraform apply --auto-approve
+  131  terraform init
+  132  terraform apply --auto-approve
+  133  ll
+  134  cat terraform.tfstate
+  135  cat terraform.tfstate.backup
+  136  du -sh  terraform.tfstate.backup
+  137  terraform state list
+  138  terraform destroy --auto-approve -target="aws_instance.three"
+  139  du -sh  terraform.tfstate.backup
+  140  terraform refresh
+  141  du -sh  terraform.tfstate.backup
+  142  cat terraform.tfstate
+  143  cat terraform.tfstate.backup
+  144  cat main.tf
+  145  vim main.tf
+  146  terraform apply --auto-approve
+  147  terraform init -migrate-state
+  148  terraform apply --auto-approve
+  149  ll
+  150  cat terraform.tfstate
+  151  terraform state list
+  152  terraform taint aws_instance.three
+  153  terraform apply --auto-approve
+  154  terraform taint aws_instance.three
+  155  terraform taint aws_subnet.two
+  156  terraform untaint aws_subnet.two
+  157  terraform untaint aws_instance.three
+  158  vim main.tf
+  159  terraform destroy --auto-approve \
+  160  terraform destroy --auto-approve
+  161  terraform state list
+  162  ll
+  163  cd terraform/
+  164  terraform destroy --auto-approve
+  165  vim main.tf
+  166  terraform destroy --auto-approve
+  167  ll
+  168  terraform state list
+  169  vim main.tf
+  170  terraform fmt
+  171  vim main.tf
+  172  terraform apply --auto-approve
+  173  cat terraform.tfstate | grep -i Name
+  174  terraform refresh
+  175  cat terraform.tfstate | grep -i Name
+  176  vim main.tf
+  177  terraform apply --auto-approve
+  178  cat terraform.tfstate | grep -i Name
+  179  terraform refresh
+  180  cat terraform.tfstate | grep -i Name
+  181  terraform destroy --auto-approve
+  182  terraform apply --auto-approve
+  183  cat main.tf
+  184  cat terraform.tfstate | grep -i Name
+  185  terraform refresh
+  186  cat terraform.tfstate | grep -i Name
+  187  terraform refresh
+  188  cat terraform.tfstate | grep -i Name
+  189  terraform destroy --auto-approve
+  190  vim main.tf
+  191  terraform fmr
+  192  terraform fmt
+  193  vim main.tf
+  194  terraform apply --auto-approve
+  195  vim main.tf
+  196  terraform apply --auto-approve
+  197  vim main.tf
+  198  terraform apply --auto-approve
+  199  vim main.tf
+  200  history
