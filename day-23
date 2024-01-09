@@ -1,0 +1,115 @@
+In Terraform alias & providers is used to match resource block with particular provider blocks the main use case of using terraform alias and providers is to create multiple resources on multiple regions with the help of single main.tf file.
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+
+resource "aws_instance" "three" {
+  ami           = "ami-079db87dc4c10ac91"
+  instance_type = "t2.micro"
+  tags = {
+    Name = "virginia-server"
+  }
+}
+
+provider "aws" {
+  region = "ap-south-1"
+  alias = "mumbai"
+}
+
+
+resource "aws_instance" "two" {
+  provider      = aws.mumbai
+  ami           = "ami-08fe36427228eddc4"
+  instance_type = "t2.micro"
+  tags = {
+    Name = "mumbai-server"
+  }
+}
+
+Terraform import: is used to import the resource configuration which we created manually by default terraform will wont track the resource that is created manually so to track the manual resources with the help of Terraform state file we can use the command called Terraform Import Command.
+
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+resource "aws_instance" "three" {
+}
+
+terraform import aws_instance.three i-0250ddb6b1487b017
+
+After importing the configuration to state file you can comment to see whether it is tracking the infrastructure or not.
+
+PROVIDERS:
+
+provider "local" {
+}
+
+
+resource "local_file" "three" {
+filename = "/root/abc.txt"
+content = "hai all good morning"
+}
+
+
+provider "github" {
+token = ""
+owner = ""
+}
+
+resource "github_repository" "example" {
+  name        = "example"
+  description = "My awesome codebase"
+
+  visibility = "public"
+
+}
+
+
+VERSION CONSTRAINTS:
+we can change the versions of provider plugins.
+
+
+
+terraform {
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
+      version = "5.10.0"
+    }
+  }
+}
+
+
+terraform {
+  required_providers {
+    local = {
+      source = "hashicorp/local"
+      version = "2.2.2"
+    }
+  }
+}
+
+
+
+provider "aws" {
+}
+
+resource "aws_instance" "one" {
+count = length(var.instance_type)
+ami = "ami-0b825ad86ddcfb907"
+instance_type = var.instance_type[count.index]
+tags = {
+Name = var.instance_name[count.index]
+}
+}
+
+variable "instance_type" {
+default = ["t2.medium", "t2.micro", "t2.nano"]
+}
+
+variable "instance_name" {
+default = ["webserver", "appserver", "dbserver"]
+}
