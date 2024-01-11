@@ -1,0 +1,263 @@
+TERRAFORM PROJECT LINK:
+https://github.com/devopsbyraham/terraform-3-tier-architecture.git
+
+
+
+
+RBAC framework in Kubernetes allows you to do just that. For example, it can help to ensure that developers only deploy certain apps to a given namespace or that your infrastructure management teams have view-only access for monitoring tasks. Basically, RBAC defines policies for restricting and controlling user access to resources of a system by using roles attached to users.
+
+USER ACCOUNT:
+A user account is used by a human user to access a computer system or network. 
+These accounts are typically authenticated using a username and password or some other form of authentication. 
+Usually assigned specific privileges and access rights based on the needs of the user and their role within the organization.
+
+SERVICE ACCOUNT:
+A service account is used by a software application or service to interact with other systems and services. 
+It provide automated access to resources and services, without requiring human intervention. 
+often used to run automated scripts or other programs that need to access network resources, such as databases or file shares.
+
+USER ACCOUNTS VS SERVICE ACCOUNTS:
+One of the key differences between user accounts and service accounts is the way they are used and managed. 
+Managed by the users themselves or by IT administrators who are responsible for managing user access rights and privileges. 
+Managed by IT administrators who are responsible for managing the application or service that uses the account.
+
+ROLE:
+A role is a set of permissions that allows a user or a group of users to access specific resources within a namespace. 
+Roles are used to define access controls at the namespace level, and they are often used to grant access to resources such as pods, services, and deployments. Roles are defined within a specific namespace, and they can only be used within that namespace.
+
+CLUSTER ROLE:
+A cluster role is a set of permissions that allows a user or a group of users to access resources across the entire cluster. 
+Cluster roles are used to define access controls at the cluster level, and they are often used to grant access to resources such as nodes, namespaces, and persistent volumes. 
+Cluster roles are defined at the cluster level, and they can be used by any namespace within the cluster.
+
+Roles are used to control access to resources within a specific namespace, while cluster roles are used to control access to resources across the entire cluster.
+
+
+It's worth noting that both roles and cluster roles can be associated with a role binding or a cluster role binding, which defines which users or groups have access to the resources controlled by the role or cluster role.
+
+ROLE BINDING:
+Role binding is used to bind a role to a user, group, or service account within a specific namespace. 
+It grants the permissions defined by the role to the bound user, group, or service account. 
+used to grant access to resources within the namespace it is defined in.
+
+CLUSTER ROLE BINDING:
+A cluster role binding is used to bind a cluster role to a user, group, or service account across the entire cluster. 
+It grants the permissions defined by the cluster role to the bound user, group, or service account.
+used to grant access to resources across the entire cluster.
+
+It's important to note that both role binding and cluster role binding require a reference to the subject, which can be a user, group, or service account. The subject is the entity to which the role or cluster role is being bound.
+
+PRACTICAL:
+
+1. Namespace-Wide RBAC Policies
+
+GIVE ARCHITECTURE (USE DEV AND TEST AND PROD NAMESPACES)
+
+1.1. Create Namespace
+
+First I have checked the RBAC enabled in the Kubernets cluster. Then created a namespace(rahasak).
+
+kubectl api-versions | grep rbac
+kubectl create namespace rahasak
+kubectl get ns
+
+
+1.2. Create Service Account
+
+Following is the way to create Service Account. I have assigned this Service Account into previously created rahasak namespace.
+
+vim one.yml
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rahasak-serviceaccount
+  namespace: rahasak
+
+
+kubectl apply -f one.yml
+kubectl get serviceaccounts -n rahasak
+
+Service account has a token. The one I just created is named, rahasak-serviceaccount-token-vntdr. This token is stored as a Kubernetes secret and can be read as a secret. This token is what you’ll use to authenticate your third-party app to the Kubernetes ApiServer.
+
+
+1.3. Create Role
+
+Following is the way to create Role with different permissions. This Role defines the actions that can be performed(get, watch, list) for the resources pods only in the rahasak namespace.
+
+vim two.yml
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: rahasak
+  name: pod-reader
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "watch", "list"]
+
+kubectl apply -f two.yml
+kubectl get roles -n rahasak
+kubectl describe role pod-reader -n rahasak
+
+
+
+1.4. Create RoleBinding
+
+This Role can be assigned to Service Account via RoleBinding. So that Service Account can only list, get, watch pods in the rahasak namespace.
+
+vim three.yml
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pod-reader-binding
+  namespace: rahasak
+roleRef: # points to the Role
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: pod-reader # name of Role
+subjects: # points to the ServiceAccount
+- kind: ServiceAccount
+  name: rahasak-serviceaccount # service account to bind to
+  namespace: rahasak # ns of service account
+
+kubectl apply -f three.yml
+kubectl get rolebindings -n rahasak
+kubectl describe rolebindings pod-reader-binding -n rahasak
+
+1.5. Test Permissions
+
+To test the permissions that assigned to the Service Account, I have used a custom pod with kubectl command inside. It available bibinwilson/docker-kubectl Docker image. I have created a pod with this Docker image and assigned the rahasak-serviceaccount to it. So the pod should only allows to do the permissions specified in the Role(e.g list, get, watch pods in the rahasak namespace). I have deployed this pod, connected to the pod via kubectl exec and check if has the privileges we mentioned in the Role.
+
+vim four.yml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rahasak-kubectl
+  namespace: rahasak
+spec:
+  containers:
+  - image: nginx:latest
+    name: kubectl
+  serviceAccountName: rahasak-serviceaccount
+
+kubectl apply -f four.yml
+kubectl get pods -n rahasak
+kubectl exec -it --namespace=rahasak rahasak-kubectl -- /bin/bash
+# check list pod permission in rahasak
+# permission should be there
+kubectl get pods -n rahasak
+kubectl get svc -n rahasak
+kubectl get pv -n rahasak
+kubectl get pods -n siva
+
+
+NOW I WANT TO GIVE THE PERMISSION OF SVC ALSO
+
+vim two.yml
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: rahasak
+  name: pod-reader
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services"]
+  verbs: ["get", "watch", "list"]
+
+kubectl apply -f two.yml
+kubectl describe role pod-reader -n rahasak
+kubectl exec -it --namespace=rahasak rahasak-kubectl -- /bin/bash
+kubectl get po
+kubectl get svc
+kubectl delete pod rahasak-kubectl
+
+Now Try to create the Svc insde the pod
+
+vim four.yml
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rahasak-kubectl
+  namespace: rahasak
+spec:
+  containers:
+  - image: nginx:latest
+    name: kubectl
+  serviceAccountName: rahasak-serviceaccount
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+  namespace: rahasak
+spec:
+  selector:
+    app.kubernetes.io/name: MyApp
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9376
+  serviceAccountName: rahasak-serviceaccount
+
+kubectl apply -f four.yml  --validate=false
+kubectl exec -it --namespace=rahasak rahasak-kubectl -- /bin/bash
+kubectl get po
+kubectl get svc
+
+Now Try to include deployment where i can do get, list, watch, create, update, delete
+
+vim two.yml
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: rahasak
+  name: pod-reader
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services"]
+  verbs: ["get", "watch", "list"]
+
+rules:
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+
+vim four.yml (add on last)
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: raham
+  name: raham-deploy
+  namespace: rahasak
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      run: raham
+  template:
+    metadata:
+      labels:
+        run: raham
+    spec:
+      containers:
+      - name: cont1
+        image: nginx
+  serviceAccountName: rahasak-serviceaccount
+
+
+kubectl apply -f four.yml --validate=false
+kubectl exec -it --namespace=rahasak rahasak-kubectl -- /bin/bash
+kubectl get deploy
+kubectl create deploy abcd --replicas=5 --image=nginx:1.16
