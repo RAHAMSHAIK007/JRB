@@ -1,0 +1,44 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('checkout') {
+            steps {
+                git 'https://github.com/summu97/jenkins-java-project.git'
+            }
+        }
+        stage('build') {
+            steps {
+                sh 'mvn compile'
+            }
+        }
+        stage('test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+        stage('Artifact') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+        stage('nexus'){
+            steps{
+                nexusArtifactUploader artifacts: [[artifactId: 'myweb', classifier: '', file: 'target/myweb-1.2.3.war', type: '.war']], credentialsId: '4296f906-995a-493e-b590-a9feeb7d8ebd', groupId: 'in.javahome', nexusUrl: '47.128.253.7:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'qwer', version: '1.2.2'
+            }
+        }
+        stage('Deployment') {
+            steps {
+                deploy adapters: [
+                   tomcat9(
+                    credentialsId: 'a73d7166-7ab5-4b64-bb5a-db27783eb31e',
+                    path: '',
+                    url: 'http://54.254.193.223:8080/'
+                    )
+                ],
+                contextPath: 'netflix',
+                war: 'target/*.war'
+            }
+        }
+    }
+}

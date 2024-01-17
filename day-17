@@ -211,7 +211,7 @@ kubectl get al1
 
 now opne second terminal 
 kubectl get po
-kubectl exec mydeploy-6bd88977d5-7s6t8 -it -- /bin/bash
+kubectl exec pod_name_id -it -- /bin/bash (this will not take you inside )
 
 go to terminal one 
 kubectl get all : it will observer for every 2 seconds
@@ -226,75 +226,4 @@ Now it will create extra pods in the terminal one
 now if the load gets down then after 5 minutes all the pods will go
 these 5 minutes is called as cooldown period 
 
-
-
-  history:
-  oot@ip-172-31-47-225 ~]# history
-    1  vim kops.sh
-    2  vim .bashrc
-    3  sh kops.sh
-    4  source .bashrc
-    5  sh kops.sh
-    6  kops validate cluster --wait 10m
-    7  cat kops.sh
-    8  kops validate cluster --wait 10m
-    9  export KOPS_STATE_STORE=s3://cloudanddevopsbyraham8899007.k8s.local
-   10  kops validate cluster --wait 10m
-   11  kubectl get svc
-   12  vim abc.yml
-   13  kubectl create -f abc.yml
-   14  kubectl get svc,deploy
-   15  kubectl delete -f abc.yml
-   16  vim abc.yml
-   17  kubectl create -f abc.yml
-   18  kubectl get svc,deploy
-   19  kubectl get po -o wide
-   20  kubectl delete -f abc.yml
-   21  vim abc.yml
-   22  kubectl create -f abc.yml
-   23  kubectl get svc,deploy
-   24  vim abc.yml
-   25  kubectl apply -f abc.yml
-   26  kubectl get svc,deploy
-   27  kubectl delete -f abc.yml
-   28  vim abc.yml
-   29  kubectl create -f abc.yml
-   30  kubectl get svc,deploy
-   31  kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-   32  minikube addons enable metrics-server #(only for minikube)
-   33  kubectl top nodes
-   34  kubectl top pods
-   35  kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-   36  kubectl top po
-   37  kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/high-availability-1.21+.yaml
-   38*
-   39  kubectl top po
-   40  kubectl top NO
-   41  kubectl top no
-   42  vim abc.yml
-   43  cat abc.yml
-   44  kubectl create -f abc.yml
-   45  vim abc.yml
-   46  kubectl create -f abc.yml
-   47  vim abc.yml
-   48  kubectl create -f abc.yml
-   49  vim abc.yml
-   50  cat abc.yml
-   51  vim  abc.yml
-   52  kubectl create -f abc.yml
-   53  cat r
-   54  cat abc.yml
-   55  vim abc.yml
-   56  kubectl create -f abc.yml
-   57  vim abc.yml
-   58  kubectl create -f abc.yml
-   59  kubectl get po
-   60  kubectl get deploy
-   61  kubectl delete deploy swiggy-deploy
-   62  kubectl get deploy
-   63  kubectl autoscale deployment mydeploy --cpu-percent=20 --min=1 --max=10
-   64  kubectl get po
-   65  kubectl exec -it mydeploy-c5d4f9cbb-flsgk -- /bin/bash
-   66  kubectl get po
-   67  history
 
