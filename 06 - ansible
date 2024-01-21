@@ -222,3 +222,4 @@ TO EXECUTE: ansible-playbook playbbok.yml
         - docker*
         - java-1.8.0-openjdk*
         - tree*
+ansible-playbook playbook.yml --syntax (this will show any errors in playbook)
